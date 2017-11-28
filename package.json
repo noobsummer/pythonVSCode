@@ -27,6 +27,9 @@
     "recommendations": [
         "donjayamanne.jupyter"
     ],
+    "extensionDependencies": [
+        "magicstack.MagicPython"
+    ],
     "keywords": [
         "python",
         "django",
