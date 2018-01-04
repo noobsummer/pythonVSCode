@@ -1,13 +1,11 @@
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { OutputChannel, TextEdit, Uri } from 'vscode';
 import { STANDARD_OUTPUT_CHANNEL } from '../common/constants';
 import { isNotInstalledError } from '../common/helpers';
 import { IPythonToolExecutionService } from '../common/process/types';
-import { IProcessService, IPythonExecutionFactory } from '../common/process/types';
 import { IInstaller, IOutputChannel, Product } from '../common/types';
-import { IEnvironmentVariablesProvider } from '../common/variables/types';
 import { IServiceContainer } from '../ioc/types';
 import { getTempFileWithDocumentContents, getTextEditsFromPatch } from './../common/editor';
 import { IFormatterHelper } from './types';
@@ -76,7 +74,7 @@ export abstract class BaseFormatter {
             .then(edits => {
                 // Delete the temporary file created
                 if (tmpFileCreated) {
-                    fs.unlink(filePath);
+                    fs.unlinkSync(filePath);
                 }
                 return edits;
             });
