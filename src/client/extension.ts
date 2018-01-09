@@ -1,3 +1,4 @@
+// tslint:disable:no-increment-decrement
 'use strict';
 // This line should always be right on top.
 // tslint:disable-next-line:no-any
@@ -66,29 +67,37 @@ export const activated = activationDeferred.promise;
 
 // tslint:disable-next-line:max-func-body-length
 export async function activate(context: vscode.ExtensionContext) {
+    let stepCounter = 0;
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     const cont = new Container();
     const serviceManager = new ServiceManager(cont);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     const serviceContainer = new ServiceContainer(cont);
     serviceManager.addSingletonInstance<IServiceContainer>(IServiceContainer, serviceContainer);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     serviceManager.addSingletonInstance<Disposable[]>(IDisposableRegistry, context.subscriptions);
     serviceManager.addSingletonInstance<Memento>(IMemento, context.globalState, GLOBAL_MEMENTO);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     serviceManager.addSingletonInstance<Memento>(IMemento, context.workspaceState, WORKSPACE_MEMENTO);
 
     const standardOutputChannel = window.createOutputChannel('Python');
     const unitTestOutChannel = window.createOutputChannel('Python Test Log');
     serviceManager.addSingletonInstance<OutputChannel>(IOutputChannel, standardOutputChannel, STANDARD_OUTPUT_CHANNEL);
     serviceManager.addSingletonInstance<OutputChannel>(IOutputChannel, unitTestOutChannel, TEST_OUTPUT_CHANNEL);
-
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     commonRegisterTypes(serviceManager);
     processRegisterTypes(serviceManager);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     variableRegisterTypes(serviceManager);
     unitTestsRegisterTypes(serviceManager);
     lintersRegisterTypes(serviceManager);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     interpretersRegisterTypes(serviceManager);
     formattersRegisterTypes(serviceManager);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     platformRegisterTypes(serviceManager);
     installerRegisterTypes(serviceManager);
-
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     const persistentStateFactory = serviceManager.get<IPersistentStateFactory>(IPersistentStateFactory);
     const pythonSettings = settings.PythonSettings.getInstance();
     sendStartupTelemetry(activated, serviceContainer);
