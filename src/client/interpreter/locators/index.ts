@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import * as _ from 'lodash';
 import * as path from 'path';
-import { Disposable, Uri, workspace } from 'vscode';
+import { Disposable, Uri, window, workspace } from 'vscode';
 import { IPlatformService } from '../../common/platform/types';
 import { IDisposableRegistry, IsWindows } from '../../common/types';
 import { arePathsSame } from '../../common/utils';
@@ -53,10 +53,13 @@ export class PythonInterpreterLocatorService implements IInterpreterLocatorServi
         return workspaceFolder ? workspaceFolder.uri.fsPath : '';
     }
     private async getInterpretersPerResource(resource?: Uri) {
-        const locators = this.getLocators(resource);
+        const locators = await this.getLocators(resource);
+        // tslint:disable-next-line:no-any
+        await window.showInformationMessage(`${locators.length} Locators ${locators.map(item => (item as any).constructor.name).join(',')}`);
         const promises = locators.map(async provider => provider.getInterpreters(resource));
+        await window.showInformationMessage('Before waiting for result');
         const listOfInterpreters = await Promise.all(promises);
-
+        await window.showInformationMessage('after waiting for result');
         // tslint:disable-next-line:underscore-consistent-invocation
         return _.flatten(listOfInterpreters)
             .map(fixInterpreterDisplayName)
@@ -77,21 +80,33 @@ export class PythonInterpreterLocatorService implements IInterpreterLocatorServi
                 return accumulator;
             }, []);
     }
-    private getLocators(resource?: Uri) {
+    private async getLocators(resource?: Uri) {
         const locators: IInterpreterLocatorService[] = [];
         // The order of the services is important.
-        if (this.platform.isWindows) {
+        if (this.platform.isWindows && await showMessageBox('Search Windows Registry?')) {
             locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, WINDOWS_REGISTRY_SERVICE));
         }
-        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_SERVICE));
-        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_FILE_SERVICE));
-        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, VIRTUAL_ENV_SERVICE));
+        if (await showMessageBox('Search Conda?')) {
+            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_SERVICE));
+        }
+        if (await showMessageBox('Search Conda files?')) {
+            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_FILE_SERVICE));
+        }
+        if (await showMessageBox('Search Virtual Environments?')) {
+            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, VIRTUAL_ENV_SERVICE));
+        }
 
-        if (!this.platform.isWindows) {
+        if (!this.platform.isWindows && await showMessageBox('Search known Paths?')) {
             locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, KNOWN_PATH_SERVICE));
         }
-        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CURRENT_PATH_SERVICE));
-
+        if (await showMessageBox('Search Current Path?')) {
+            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CURRENT_PATH_SERVICE));
+        }
         return locators;
     }
+}
+
+async function showMessageBox(message: string): Promise<boolean> {
+    const option = await window.showInformationMessage(message, 'Yes', 'No');
+    return option === 'Yes';
 }
