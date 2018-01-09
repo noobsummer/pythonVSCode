@@ -100,30 +100,45 @@ export async function activate(context: vscode.ExtensionContext) {
     await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     const persistentStateFactory = serviceManager.get<IPersistentStateFactory>(IPersistentStateFactory);
     const pythonSettings = settings.PythonSettings.getInstance();
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     sendStartupTelemetry(activated, serviceContainer);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
 
     sortImports.activate(context, standardOutputChannel, serviceContainer);
     const interpreterManager = new InterpreterManager(serviceContainer);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
 
     const pythonInstaller = new PythonInstaller(serviceContainer);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     await pythonInstaller.checkPythonInstallation(PythonSettings.getInstance());
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
 
     // This must be completed before we can continue.
     await interpreterManager.autoSetInterpreter();
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
 
     interpreterManager.refresh()
         .catch(ex => console.error('Python Extension: interpreterManager.refresh', ex));
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(interpreterManager);
     const processService = serviceContainer.get<IProcessService>(IProcessService);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     const interpreterVersionService = serviceContainer.get<IInterpreterVersionService>(IInterpreterVersionService);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(new SetInterpreterProvider(interpreterManager, interpreterVersionService, processService));
     context.subscriptions.push(...activateExecInTerminalProvider());
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(activateUpdateSparkLibraryProvider());
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     activateSimplePythonRefactorProvider(context, standardOutputChannel, serviceContainer);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     const jediFactory = new JediFactory(context.asAbsolutePath('.'), serviceContainer);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(...activateGoToObjectDefinitionProvider(jediFactory));
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
 
     context.subscriptions.push(new ReplProvider(serviceContainer.get<IPythonExecutionFactory>(IPythonExecutionFactory)));
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
 
     // Enable indentAction
     // tslint:disable-next-line:no-non-null-assertion
@@ -145,20 +160,27 @@ export async function activate(context: vscode.ExtensionContext) {
         ]
     });
 
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(jediFactory);
     context.subscriptions.push(vscode.languages.registerRenameProvider(PYTHON, new PythonRenameProvider(serviceContainer)));
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     const definitionProvider = new PythonDefinitionProvider(jediFactory);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(PYTHON, definitionProvider));
     context.subscriptions.push(vscode.languages.registerHoverProvider(PYTHON, new PythonHoverProvider(jediFactory)));
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(vscode.languages.registerReferenceProvider(PYTHON, new PythonReferenceProvider(jediFactory)));
     context.subscriptions.push(vscode.languages.registerCompletionItemProvider(PYTHON, new PythonCompletionItemProvider(jediFactory), '.'));
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(PYTHON, new ShebangCodeLensProvider(processService)));
 
     const symbolProvider = new PythonSymbolProvider(jediFactory);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(PYTHON, symbolProvider));
     if (pythonSettings.devOptions.indexOf('DISABLE_SIGNATURE') === -1) {
         context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(PYTHON, new PythonSignatureProvider(jediFactory), '(', ','));
     }
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     if (pythonSettings.formatting.provider !== 'none') {
         const formatProvider = new PythonFormattingEditProvider(context, serviceContainer);
         context.subscriptions.push(vscode.languages.registerDocumentFormattingEditProvider(PYTHON, formatProvider));
@@ -167,8 +189,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // tslint:disable-next-line:promise-function-async
     const linterProvider = new LintProvider(context, standardOutputChannel, (a, b) => Promise.resolve(false), serviceContainer);
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(linterProvider);
     const jupyterExtInstalled = vscode.extensions.getExtension('donjayamanne.jupyter');
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     if (jupyterExtInstalled) {
         if (jupyterExtInstalled.isActive) {
             // tslint:disable-next-line:no-unsafe-any
@@ -184,24 +208,31 @@ export async function activate(context: vscode.ExtensionContext) {
             linterProvider.documentHasJupyterCodeCells = jupyterExtInstalled.exports.hasCodeCells;
         });
     }
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     tests.activate(context, unitTestOutChannel, symbolProvider, serviceContainer);
 
     context.subscriptions.push(new WorkspaceSymbols(serviceContainer));
 
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(vscode.languages.registerOnTypeFormattingEditProvider(PYTHON, new BlockFormatProviders(), ':'));
     // In case we have CR LF
     const triggerCharacters: string[] = os.EOL.split('');
     triggerCharacters.shift();
 
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('python', new SimpleConfigurationProvider()));
     activationDeferred.resolve();
 
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     // tslint:disable-next-line:no-unused-expression
     new BannerService(persistentStateFactory);
 
     const deprecationMgr = new FeatureDeprecationManager(persistentStateFactory, !!jupyterExtInstalled);
     deprecationMgr.initialize();
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
     context.subscriptions.push(new FeatureDeprecationManager(persistentStateFactory, !!jupyterExtInstalled));
+    await vscode.window.showQuickPick([`Step ${++stepCounter}`]);
+    vscode.window.showInformationMessage('All Done');
 }
 
 async function sendStartupTelemetry(activatedPromise: Promise<void>, serviceContainer: IServiceContainer) {
