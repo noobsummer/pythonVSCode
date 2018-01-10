@@ -7,6 +7,7 @@ import { IInterpreterLocatorService, IInterpreterVersionService, IKnownSearchPat
 import { IVirtualEnvironmentManager } from '../../virtualEnvs/types';
 import { lookForInterpretersInDirectory } from '../helpers';
 import * as settings from './../../../common/configSettings';
+import { debugLog } from '../../../dbgLogging';
 
 // tslint:disable-next-line:no-require-imports no-var-requires
 const untildify = require('untildify');
@@ -27,7 +28,10 @@ export class VirtualEnvService implements IInterpreterLocatorService {
             .then(listOfInterpreters => _.flatten(listOfInterpreters));
     }
     private async lookForInterpretersInVenvs(pathToCheck: string) {
-        return fsReaddirAsync(pathToCheck)
+        debugLog(`Start lookForInterpretersInVenvs`);
+        const subDirs = await fsReaddirAsync(pathToCheck);
+        debugLog(`End lookForInterpretersInVenvs`);
+        return Promise.resolve(subDirs)
             .then(subDirs => Promise.all(this.getProspectiveDirectoriesForLookup(subDirs)))
             .then(dirs => dirs.filter(dir => dir.length > 0))
             .then(dirs => Promise.all(dirs.map(lookForInterpretersInDirectory)))
@@ -35,6 +39,7 @@ export class VirtualEnvService implements IInterpreterLocatorService {
             .then(pathsWithInterpreters => _.flatten(pathsWithInterpreters))
             .then(interpreters => Promise.all(interpreters.map(interpreter => this.getVirtualEnvDetails(interpreter))))
             .catch((err) => {
+                debugLog(`Python Extension (lookForInterpretersInVenvs):`);
                 console.error('Python Extension (lookForInterpretersInVenvs):', err);
                 // Ignore exceptions.
                 return [] as PythonInterpreter[];
@@ -58,18 +63,25 @@ export class VirtualEnvService implements IInterpreterLocatorService {
 
     }
     private async getVirtualEnvDetails(interpreter: string): Promise<PythonInterpreter> {
+        debugLog(`Start getVirtualEnvDetails ${interpreter}`);
         return Promise.all([
             this.versionProvider.getVersion(interpreter, path.basename(interpreter)),
             this.virtualEnvMgr.detect(interpreter)
         ])
             .then(([displayName, virtualEnv]) => {
+                debugLog(`End getVirtualEnvDetails ${interpreter}`);
                 const virtualEnvSuffix = virtualEnv ? virtualEnv.name : this.getVirtualEnvironmentRootDirectory(interpreter);
                 return {
                     displayName: `${displayName} (${virtualEnvSuffix})`.trim(),
                     path: interpreter,
                     type: virtualEnv ? virtualEnv.type : InterpreterType.Unknown
                 };
-            });
+            })
+            .catch(ex => {
+                debugLog(`End getVirtualEnvDetails ${interpreter} with errors`);
+                console.error(`End getVirtualEnvDetails ${interpreter} with errors`, ex);
+                return Promise.reject(ex);
+            })
     }
     private getVirtualEnvironmentRootDirectory(interpreter: string) {
         return path.basename(path.dirname(path.dirname(interpreter)));

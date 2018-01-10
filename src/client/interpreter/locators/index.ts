@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import { Disposable, Uri, window, workspace } from 'vscode';
 import { IPlatformService } from '../../common/platform/types';
-import { IDisposableRegistry, IsWindows } from '../../common/types';
+import { IDisposableRegistry } from '../../common/types';
 import { arePathsSame } from '../../common/utils';
 import { IServiceContainer } from '../../ioc/types';
 import {
@@ -18,6 +18,7 @@ import {
     WINDOWS_REGISTRY_SERVICE
 } from '../contracts';
 import { fixInterpreterDisplayName } from './helpers';
+import { debugLog } from '../../dbgLogging';
 
 @injectable()
 export class PythonInterpreterLocatorService implements IInterpreterLocatorService {
@@ -47,6 +48,9 @@ export class PythonInterpreterLocatorService implements IInterpreterLocatorServi
     }
     private getResourceKey(resource?: Uri) {
         if (!resource) {
+            return '';
+        }
+        if (Array.isArray(workspace.workspaceFolders) && workspace.workspaceFolders.length <= 1) {
             return '';
         }
         const workspaceFolder = workspace.getWorkspaceFolder(resource);
@@ -83,30 +87,32 @@ export class PythonInterpreterLocatorService implements IInterpreterLocatorServi
     private async getLocators(resource?: Uri) {
         const locators: IInterpreterLocatorService[] = [];
         // The order of the services is important.
-        if (this.platform.isWindows && await showMessageBox('Search Windows Registry?')) {
+        if (this.platform.isWindows) {
             locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, WINDOWS_REGISTRY_SERVICE));
+            debugLog('1. Start using Windows Registry');
+            await locators[locators.length - 1].getInterpreters(resource);
+            debugLog('1. Done using Windows Registry');
         }
-        if (await showMessageBox('Search Conda?')) {
-            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_SERVICE));
-        }
-        if (await showMessageBox('Search Conda files?')) {
-            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_FILE_SERVICE));
-        }
-        if (await showMessageBox('Search Virtual Environments?')) {
-            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, VIRTUAL_ENV_SERVICE));
-        }
+        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_SERVICE));
+        debugLog('2. Start using CondaEnv');
+        await locators[locators.length - 1].getInterpreters(resource);
+        debugLog('2. Done using CondaEnv');
+        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_FILE_SERVICE));
+        debugLog('3. Start using CondaFile');
+        await locators[locators.length - 1].getInterpreters(resource);
+        debugLog('3. Done using CondaFile');
+        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, VIRTUAL_ENV_SERVICE));
+        debugLog('4. Start using VirtualEnv');
+        await locators[locators.length - 1].getInterpreters(resource);
+        debugLog('4. Done using VirtualEnv');
 
-        if (!this.platform.isWindows && await showMessageBox('Search known Paths?')) {
+        if (!this.platform.isWindows) {
             locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, KNOWN_PATH_SERVICE));
         }
-        if (await showMessageBox('Search Current Path?')) {
-            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CURRENT_PATH_SERVICE));
-        }
+        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CURRENT_PATH_SERVICE));
+        debugLog('5. Start using CurrentPath');
+        await locators[locators.length - 1].getInterpreters(resource);
+        debugLog('5. Done using CurrentPath');
         return locators;
     }
-}
-
-async function showMessageBox(message: string): Promise<boolean> {
-    const option = await window.showInformationMessage(message, 'Yes', 'No');
-    return option === 'Yes';
 }

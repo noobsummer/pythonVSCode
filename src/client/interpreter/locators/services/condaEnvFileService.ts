@@ -11,6 +11,7 @@ import {
     PythonInterpreter
 } from '../../contracts';
 import { AnacondaCompanyName, AnacondaCompanyNames, AnacondaDisplayName, CONDA_RELATIVE_PY_PATH } from './conda';
+import { debugLog } from '../../../dbgLogging';
 
 @injectable()
 export class CondaEnvFileService implements IInterpreterLocatorService {
@@ -27,7 +28,10 @@ export class CondaEnvFileService implements IInterpreterLocatorService {
             .then(exists => exists ? this.getEnvironmentsFromFile(this.condaEnvironmentFile) : Promise.resolve([]));
     }
     private async getEnvironmentsFromFile(envFile: string) {
-        return fs.readFile(envFile)
+        debugLog('Start reading file in CondaEnvFileService');
+        const buffer = await fs.readFile(envFile);
+        debugLog('End reading file in CondaEnvFileService');
+        return Promise.resolve(buffer)
             .then(buffer => buffer.toString().split(/\r?\n/g))
             .then(lines => lines.map(line => line.trim()))
             .then(lines => lines.map(line => path.join(line, ...CONDA_RELATIVE_PY_PATH)))
@@ -37,14 +41,17 @@ export class CondaEnvFileService implements IInterpreterLocatorService {
             .then(interpreterPaths => interpreterPaths.map(item => this.getInterpreterDetails(item)))
             .then(promises => Promise.all(promises))
             .catch((err) => {
+                debugLog('Python Extension (getEnvironmentsFromFile.readFile):');
                 console.error('Python Extension (getEnvironmentsFromFile.readFile):', err);
                 // Ignore errors in reading the file.
                 return [] as PythonInterpreter[];
             });
     }
     private async getInterpreterDetails(interpreter: string) {
+        debugLog(`Start CondaEnvFileService.getInterpreterDetails: ${interpreter}`);
         return this.versionService.getVersion(interpreter, path.basename(interpreter))
             .then(version => {
+                debugLog(`End CondaEnvFileService.getInterpreterDetails: ${interpreter}`);
                 version = this.stripCompanyName(version);
                 const envName = this.getEnvironmentRootDirectory(interpreter);
                 // tslint:disable-next-line:no-unnecessary-local-variable

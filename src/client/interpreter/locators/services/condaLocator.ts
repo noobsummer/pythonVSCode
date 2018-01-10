@@ -5,6 +5,7 @@ import { IProcessService } from '../../../common/process/types';
 import { IsWindows } from '../../../common/types';
 import { VersionUtils } from '../../../common/versionUtils';
 import { ICondaLocatorService, IInterpreterLocatorService, PythonInterpreter, WINDOWS_REGISTRY_SERVICE } from '../../contracts';
+import { debugLog } from '../../../dbgLogging';
 
 // tslint:disable-next-line:no-require-imports no-var-requires
 const untildify: (value: string) => string = require('untildify');
@@ -27,7 +28,9 @@ export class CondaLocatorService implements ICondaLocatorService {
         if (this.condaFile) {
             return this.condaFile!;
         }
+        debugLog(`Start Checkif Conda in Current Path`);
         const isAvailable = await this.isCondaInCurrentPath();
+        debugLog(`End Checkif Conda in Current Path`);
         if (isAvailable) {
             return 'conda';
         }
@@ -42,6 +45,7 @@ export class CondaLocatorService implements ICondaLocatorService {
                     return fs.pathExists(condaPath).then(exists => exists ? condaPath : 'conda');
                 });
         }
+        debugLog(`Should not be here`);
         this.condaFile = await this.getCondaFileFromKnownLocations();
         return this.condaFile!;
     }
@@ -51,10 +55,17 @@ export class CondaLocatorService implements ICondaLocatorService {
             .catch(() => this.isAvailable = false);
     }
     public async getCondaVersion(): Promise<string | undefined> {
+        debugLog(`Start GetConda Version`);
         return this.getCondaFile()
             .then(condaFile => this.processService.exec(condaFile, ['--version'], {}))
-            .then(result => result.stdout.trim())
-            .catch(() => undefined);
+            .then(result => {
+                debugLog(`End GetConda Version ${result.stdout.trim()}`);
+                return result.stdout.trim();
+            })
+            .catch(() => {
+                debugLog(`End GetConda Version with errors (ignored)`);
+                return undefined;
+            });
     }
     public isCondaEnvironment(interpreter: PythonInterpreter) {
         return (interpreter.displayName ? interpreter.displayName : '').toUpperCase().indexOf('ANACONDA') >= 0 ||

@@ -187,7 +187,6 @@ export class LintProvider implements vscode.Disposable {
         });
 
         this.pendingLintings.set(document.uri.fsPath, cancelToken);
-        this.outputChannel.clear();
         const promises: Promise<linter.ILintMessage[]>[] = this.linters
             .filter(item => item.isEnabled(document.uri))
             .map(item => {

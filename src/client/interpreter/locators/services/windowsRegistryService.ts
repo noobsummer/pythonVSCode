@@ -7,6 +7,7 @@ import { Architecture, IRegistry, RegistryHive } from '../../../common/platform/
 import { Is64Bit } from '../../../common/types';
 import { IInterpreterLocatorService, InterpreterType, PythonInterpreter } from '../../contracts';
 import { AnacondaCompanyName, AnacondaCompanyNames } from './conda';
+import { debugLog } from '../../../dbgLogging';
 
 // tslint:disable-next-line:variable-name
 const DefaultPythonExecutable = 'python.exe';
@@ -35,6 +36,7 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
     // tslint:disable-next-line:no-empty
     public dispose() { }
     private async getInterpretersFromRegistry() {
+        debugLog(`Start getInterpretersFromRegistry`);
         // https://github.com/python/peps/blob/master/pep-0514.txt#L357
         const hkcuArch = this.is64Bit ? undefined : Architecture.x86;
         const promises: Promise<CompanyInterpreter[]>[] = [
@@ -47,13 +49,14 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
         }
 
         const companies = await Promise.all<CompanyInterpreter[]>(promises);
+        debugLog(`Start getInterpretersFromRegistry (end get companies)`);
         // tslint:disable-next-line:underscore-consistent-invocation
         const companyInterpreters = await Promise.all(_.flatten(companies)
             .filter(item => item !== undefined && item !== null)
             .map(company => {
                 return this.getInterpretersForCompany(company.companyKey, company.hive, company.arch);
             }));
-
+        debugLog(`Start getInterpretersFromRegistry (end flatten companies)`);
         // tslint:disable-next-line:underscore-consistent-invocation
         return _.flatten(companyInterpreters)
             .filter(item => item !== undefined && item !== null)
@@ -67,18 +70,28 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
             }, []);
     }
     private async getCompanies(hive: RegistryHive, arch?: Architecture): Promise<CompanyInterpreter[]> {
+        debugLog(`Start getCompanies`);
         return this.registry.getKeys('\\Software\\Python', hive, arch)
             .then(companyKeys => companyKeys
                 .filter(companyKey => CompaniesToIgnore.indexOf(path.basename(companyKey).toUpperCase()) === -1)
                 .map(companyKey => {
+                    debugLog(`End getCompanies`);
                     return { companyKey, hive, arch };
-                }));
+                }))
+            .catch(ex => {
+                debugLog(`End getCompanies with errors`);
+                console.error(`End getCompanies with errors`, ex);
+                return Promise.reject(ex);
+            })
     }
     private async getInterpretersForCompany(companyKey: string, hive: RegistryHive, arch?: Architecture) {
+        debugLog(`Start getInterpretersForCompany`);
         const tagKeys = await this.registry.getKeys(companyKey, hive, arch);
+        debugLog(`End getInterpretersForCompany`);
         return Promise.all(tagKeys.map(tagKey => this.getInreterpreterDetailsForCompany(tagKey, companyKey, hive, arch)));
     }
     private getInreterpreterDetailsForCompany(tagKey: string, companyKey: string, hive: RegistryHive, arch?: Architecture): Promise<PythonInterpreter | undefined | null> {
+        debugLog(`Start getInreterpreterDetailsForCompany`);
         const key = `${tagKey}\\InstallPath`;
         type InterpreterInformation = null | undefined | {
             installPath: string,
@@ -111,6 +124,7 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
                     });
             })
             .then((interpreterInfo?: InterpreterInformation) => {
+                debugLog(`End getInreterpreterDetailsForCompany`);
                 if (!interpreterInfo) {
                     return;
                 }
@@ -130,6 +144,7 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
             })
             .then(interpreter => interpreter ? fs.pathExists(interpreter.path).catch(() => false).then(exists => exists ? interpreter : null) : null)
             .catch(error => {
+                debugLog(`End getInreterpreterDetailsForCompany with errors`);
                 console.error(`Failed to retrieve interpreter details for company ${companyKey},tag: ${tagKey}, hive: ${hive}, arch: ${arch}`);
                 console.error(error);
                 return null;

@@ -7,6 +7,7 @@ import { VersionUtils } from '../../../common/versionUtils';
 import { ICondaLocatorService, IInterpreterLocatorService, IInterpreterVersionService, InterpreterType, PythonInterpreter } from '../../contracts';
 import { AnacondaCompanyName, AnacondaCompanyNames, CONDA_RELATIVE_PY_PATH, CondaInfo } from './conda';
 import { CondaHelper } from './condaHelper';
+import { debugLog } from '../../../dbgLogging';
 
 @injectable()
 export class CondaEnvService implements IInterpreterLocatorService {
@@ -25,14 +26,18 @@ export class CondaEnvService implements IInterpreterLocatorService {
             (interpreter.companyDisplayName ? interpreter.companyDisplayName : '').toUpperCase().indexOf('CONTINUUM') >= 0;
     }
     public getLatestVersion(interpreters: PythonInterpreter[]) {
+        debugLog('Start getting Latest Version');
         const sortedInterpreters = interpreters.filter(interpreter => interpreter.version && interpreter.version.length > 0);
         // tslint:disable-next-line:no-non-null-assertion
         sortedInterpreters.sort((a, b) => VersionUtils.compareVersion(a.version!, b.version!));
         if (sortedInterpreters.length > 0) {
+            debugLog('End getting Latest Version');
             return sortedInterpreters[sortedInterpreters.length - 1];
         }
+        debugLog('End getting Latest Version');
     }
     public async parseCondaInfo(info: CondaInfo) {
+        debugLog('Start parsing CondaInfo');
         const condaDisplayName = this.condaHelper.getDisplayName(info);
 
         // The root of the conda environment is itself a Python interpreter
@@ -100,9 +105,13 @@ export class CondaEnvService implements IInterpreterLocatorService {
     }
     private async getSuggestionsFromConda(): Promise<PythonInterpreter[]> {
         return this.condaLocator.getCondaFile()
-            .then(condaFile => this.processService.exec(condaFile, ['info', '--json']))
+            .then(condaFile => {
+                debugLog(`Start Executing Conda :${condaFile}`);
+                return this.processService.exec(condaFile, ['info', '--json']);
+            })
             .then(output => output.stdout)
             .then(stdout => {
+                debugLog(`End Executing Conda`);
                 if (stdout.length === 0) {
                     return [];
                 }
@@ -118,6 +127,9 @@ export class CondaEnvService implements IInterpreterLocatorService {
                     // In all cases, we can't offer conda pythonPath suggestions.
                     return [];
                 }
-            }).catch(() => []);
+            }).catch(() => {
+                debugLog(`End Executing Conda with errors (but ignored)`);
+                return [];
+            });
     }
 }

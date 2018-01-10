@@ -6,6 +6,7 @@ import { PythonSettings } from '../../../common/configSettings';
 import { IProcessService } from '../../../common/process/types';
 import { IInterpreterLocatorService, IInterpreterVersionService, InterpreterType } from '../../contracts';
 import { IVirtualEnvironmentManager } from '../../virtualEnvs/types';
+import { debugLog } from '../../../dbgLogging';
 
 @injectable()
 export class CurrentPathService implements IInterpreterLocatorService {
@@ -18,11 +19,19 @@ export class CurrentPathService implements IInterpreterLocatorService {
     // tslint:disable-next-line:no-empty
     public dispose() { }
     private async suggestionsFromKnownPaths(resource?: Uri) {
-        const currentPythonInterpreter = this.getInterpreter(PythonSettings.getInstance(resource).pythonPath, '').then(interpreter => [interpreter]);
-        const python = this.getInterpreter('python', '').then(interpreter => [interpreter]);
-        const python2 = this.getInterpreter('python2', '').then(interpreter => [interpreter]);
-        const python3 = this.getInterpreter('python3', '').then(interpreter => [interpreter]);
-        return Promise.all<string[]>([currentPythonInterpreter, python, python2, python3])
+        debugLog(`Start suggestionsFromKnownPaths`);
+        const currentPythonInterpreter = await this.getInterpreter(PythonSettings.getInstance(resource).pythonPath, '').then(interpreter => [interpreter]);
+        debugLog(`End suggestionsFromKnownPaths`);
+        debugLog(`Start suggestionsFromKnownPaths python`);
+        const python = await this.getInterpreter('python', '').then(interpreter => [interpreter]);
+        debugLog(`End suggestionsFromKnownPaths python`);
+        debugLog(`Start suggestionsFromKnownPaths python2`);
+        const python2 = await this.getInterpreter('python2', '').then(interpreter => [interpreter]);
+        debugLog(`End suggestionsFromKnownPaths python2`);
+        debugLog(`Start suggestionsFromKnownPaths python2`);
+        const python3 = await this.getInterpreter('python3', '').then(interpreter => [interpreter]);
+        debugLog(`End suggestionsFromKnownPaths python3`);
+        return Promise.resolve([currentPythonInterpreter, python, python2, python3])
             // tslint:disable-next-line:underscore-consistent-invocation
             .then(listOfInterpreters => _.flatten(listOfInterpreters))
             .then(interpreters => interpreters.filter(item => item.length > 0))
@@ -30,23 +39,37 @@ export class CurrentPathService implements IInterpreterLocatorService {
             .then(interpreters => Promise.all(interpreters.map(interpreter => this.getInterpreterDetails(interpreter))));
     }
     private async getInterpreterDetails(interpreter: string) {
+        debugLog(`Start getInterpreterDetails: ${interpreter}`);
         return Promise.all([
             this.versionProvider.getVersion(interpreter, path.basename(interpreter)),
             this.virtualEnvMgr.detect(interpreter)
         ])
             .then(([displayName, virtualEnv]) => {
+                debugLog(`End getInterpreterDetails: ${interpreter}`);
                 displayName += virtualEnv ? ` (${virtualEnv.name})` : '';
                 return {
                     displayName,
                     path: interpreter,
                     type: InterpreterType.Unknown
                 };
+            })
+            .catch(ex => {
+                debugLog(`End getInterpreterDetails with errors: ${interpreter}`);
+                console.error(`End getInterpreterDetails with errors: ${interpreter}`, ex);
+                return Promise.reject(ex);
             });
     }
     private async getInterpreter(pythonPath: string, defaultValue: string) {
+        debugLog(`Start getInterpreter sys.exec: ${pythonPath}`);
         return this.processService.exec(pythonPath, ['-c', 'import sys;print(sys.executable)'], {})
             .then(output => output.stdout.trim())
-            .then(value => value.length === 0 ? defaultValue : value)
-            .catch(() => defaultValue);    // Ignore exceptions in getting the executable.
+            .then(value => {
+                debugLog(`End getInterpreter sys.exec: ${pythonPath}`);
+                return value.length === 0 ? defaultValue : value;
+            })
+            .catch(() => {
+                debugLog(`End getInterpreter sys.exec with errors (igored): ${pythonPath}`);
+                return defaultValue;
+            });    // Ignore exceptions in getting the executable.
     }
 }
