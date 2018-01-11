@@ -8,8 +8,8 @@ if ((Reflect as any).metadata === undefined) {
 }
 import { Container } from 'inversify';
 import * as os from 'os';
-import * as vscode from 'vscode';
 import { Disposable, Memento, OutputChannel, window } from 'vscode';
+import * as vscode from 'vscode';
 import { BannerService } from './banner';
 import * as settings from './common/configSettings';
 import { PythonSettings } from './common/configSettings';
@@ -24,11 +24,12 @@ import { IProcessService, IPythonExecutionFactory } from './common/process/types
 import { registerTypes as commonRegisterTypes } from './common/serviceRegistry';
 import { GLOBAL_MEMENTO, IDisposableRegistry, ILogger, IMemento, IOutputChannel, IPersistentStateFactory, WORKSPACE_MEMENTO } from './common/types';
 import { registerTypes as variableRegisterTypes } from './common/variables/serviceRegistry';
+import { debugLog, setOutputChannel } from './dbgLogging';
 import { SimpleConfigurationProvider } from './debugger';
 import { registerTypes as formattersRegisterTypes } from './formatters/serviceRegistry';
 import { InterpreterManager } from './interpreter';
 import { SetInterpreterProvider } from './interpreter/configuration/setInterpreterProvider';
-import { ICondaLocatorService, IInterpreterVersionService } from './interpreter/contracts';
+import { CURRENT_PATH_SERVICE, ICondaLocatorService, IInterpreterLocatorService, IInterpreterVersionService } from './interpreter/contracts';
 import { ShebangCodeLensProvider } from './interpreter/display/shebangCodeLensProvider';
 import { registerTypes as interpretersRegisterTypes } from './interpreter/serviceRegistry';
 import { ServiceContainer } from './ioc/container';
@@ -60,7 +61,6 @@ import { TEST_OUTPUT_CHANNEL } from './unittests/common/constants';
 import * as tests from './unittests/main';
 import { registerTypes as unitTestsRegisterTypes } from './unittests/serviceRegistry';
 import { WorkspaceSymbols } from './workspaceSymbols/main';
-import { setOutputChannel } from './dbgLogging';
 
 const PYTHON: vscode.DocumentFilter = { language: 'python' };
 const activationDeferred = createDeferred<void>();
@@ -107,6 +107,12 @@ export async function activate(context: vscode.ExtensionContext) {
     const interpreterManager = new InterpreterManager(serviceContainer);
 
     const pythonInstaller = new PythonInstaller(serviceContainer);
+
+    debugLog('Start getting paths in extension.ts');
+    const pathService = serviceManager.get<IInterpreterLocatorService>(IInterpreterLocatorService, CURRENT_PATH_SERVICE);
+    const output = await pathService.getInterpreters();
+    debugLog('End getting paths in extension.ts');
+    debugLog(`End getting paths in extension.ts ${JSON.stringify(output)}`);
 
     await pythonInstaller.checkPythonInstallation(PythonSettings.getInstance());
 

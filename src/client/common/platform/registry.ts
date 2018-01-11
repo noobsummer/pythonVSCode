@@ -43,7 +43,7 @@ async function getRegistryValue(options: Registry.Options, name: string = '') {
         } catch (ex) {
             debugLog(`End getRegistryValue with errors ${JSON.stringify(options)}, ${name}`);
             console.error(`End getRegistryValue with errors ${JSON.stringify(options)}, ${name}`, ex)
-            console.error(ex)
+            console.error(ex);
         }
     });
 }
@@ -61,7 +61,7 @@ async function getRegistryKeys(options: Registry.Options): Promise<string[]> {
         } catch (ex) {
             debugLog(`End getRegistryKeys with errors ${JSON.stringify(options)}`);
             console.error(`End getRegistryKeys with errors ${JSON.stringify(options)}`, ex)
-            console.error(ex)
+            console.error(ex);
         }
     });
 }

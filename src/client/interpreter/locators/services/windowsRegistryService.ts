@@ -39,22 +39,45 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
         debugLog(`Start getInterpretersFromRegistry`);
         // https://github.com/python/peps/blob/master/pep-0514.txt#L357
         const hkcuArch = this.is64Bit ? undefined : Architecture.x86;
+
+        debugLog(`Start getInterpretersFromRegistry 1. HKCU ${hkcuArch}`);
+        const one = await this.getCompanies(RegistryHive.HKCU, hkcuArch);
+        debugLog(`End getInterpretersFromRegistry 1. HKCU ${hkcuArch}, ${one.length}`);
+        debugLog(`End getInterpretersFromRegistry 1. HKCU ${hkcuArch}, ${JSON.stringify(one)}`);
+
+        debugLog(`Start getInterpretersFromRegistry 2. HKLM x86`);
+        const two = await this.getCompanies(RegistryHive.HKLM, Architecture.x86);
+        debugLog(`End getInterpretersFromRegistry 2. HKLM x86, ${two.length}`);
+        debugLog(`End getInterpretersFromRegistry 2. HKLM x86, ${JSON.stringify(two)}`);
+
         const promises: Promise<CompanyInterpreter[]>[] = [
             this.getCompanies(RegistryHive.HKCU, hkcuArch),
             this.getCompanies(RegistryHive.HKLM, Architecture.x86)
         ];
         // https://github.com/Microsoft/PTVS/blob/ebfc4ca8bab234d453f15ee426af3b208f3c143c/Python/Product/Cookiecutter/Shared/Interpreters/PythonRegistrySearch.cs#L44
         if (this.is64Bit) {
+
+            debugLog(`Start getInterpretersFromRegistry 3. HKLM 64`);
+            const three = await this.getCompanies(RegistryHive.HKLM, Architecture.x64);
+            debugLog(`End getInterpretersFromRegistry 3. HKLM 64 ${three.length}`);
+            debugLog(`End getInterpretersFromRegistry 3. HKLM 64 ${JSON.stringify(three)}`);
+
             promises.push(this.getCompanies(RegistryHive.HKLM, Architecture.x64));
         }
 
         const companies = await Promise.all<CompanyInterpreter[]>(promises);
-        debugLog(`Start getInterpretersFromRegistry (end get companies)`);
+        debugLog(`Start getInterpretersFromRegistry (end get companies) ${companies.length}`);
+        const flattenedList = _.flatten(companies).filter(item => item !== undefined && item !== null);
+        debugLog(`Start getInterpretersFromRegistry (end get companies) flattened ${flattenedList.length}`);
         // tslint:disable-next-line:underscore-consistent-invocation
-        const companyInterpreters = await Promise.all(_.flatten(companies)
-            .filter(item => item !== undefined && item !== null)
-            .map(company => {
-                return this.getInterpretersForCompany(company.companyKey, company.hive, company.arch);
+        const companyInterpreters = await Promise.all(flattenedList
+            .map(async company => {
+                debugLog(`Start getInterpretersFromRegistry (start for company) ${JSON.stringify(company)}`);
+                const info = await this.getInterpretersForCompany(company.companyKey, company.hive, company.arch);
+                debugLog(`Start getInterpretersFromRegistry (end for company) ${JSON.stringify(company)}`);
+                debugLog(`Start getInterpretersFromRegistry (end for company) company info ${info.length}`);
+                debugLog(`Start getInterpretersFromRegistry (end for company) company info ${JSON.stringify(info)}`);
+                return info;
             }));
         debugLog(`Start getInterpretersFromRegistry (end flatten companies)`);
         // tslint:disable-next-line:underscore-consistent-invocation
