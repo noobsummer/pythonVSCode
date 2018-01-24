@@ -29,7 +29,7 @@ export class CurrentPathService implements IInterpreterLocatorService {
             debugLog(`Start suggestionsFromKnownPaths python2`);
             const python2 = await this.getInterpreter('python2', '').then(interpreter => [interpreter]);
             debugLog(`End suggestionsFromKnownPaths python2 ${JSON.stringify(python2)}`);
-            debugLog(`Start suggestionsFromKnownPaths python2`);
+            debugLog(`Start suggestionsFromKnownPaths python3`);
             const python3 = await this.getInterpreter('python3', '').then(interpreter => [interpreter]);
             debugLog(`End suggestionsFromKnownPaths python3 ${JSON.stringify(python3)}`);
             const interpreters = _.flatten([currentPythonInterpreter, python, python2, python3]).filter(item => item.length > 0);
@@ -88,6 +88,7 @@ export class CurrentPathService implements IInterpreterLocatorService {
             debugLog(`Start getInterpreter sys.exec: (crash) ${pythonPath}`);
             debugLog(`Start getInterpreter sys.exec: (crash) ${JSON.stringify(ex)}`);
             debugLog(`Start getInterpreter sys.exec: (crash) ${ex && ex.message ? ex.message : ex}`);
+            return defaultValue;
         }
     }
 }
