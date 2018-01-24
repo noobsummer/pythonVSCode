@@ -5,6 +5,7 @@ import { Disposable, Uri, window, workspace } from 'vscode';
 import { IPlatformService } from '../../common/platform/types';
 import { IDisposableRegistry } from '../../common/types';
 import { arePathsSame } from '../../common/utils';
+import { debugLog } from '../../dbgLogging';
 import { IServiceContainer } from '../../ioc/types';
 import {
     CONDA_ENV_FILE_SERVICE,
@@ -18,7 +19,6 @@ import {
     WINDOWS_REGISTRY_SERVICE
 } from '../contracts';
 import { fixInterpreterDisplayName } from './helpers';
-import { debugLog } from '../../dbgLogging';
 
 @injectable()
 export class PythonInterpreterLocatorService implements IInterpreterLocatorService {
@@ -57,13 +57,9 @@ export class PythonInterpreterLocatorService implements IInterpreterLocatorServi
         return workspaceFolder ? workspaceFolder.uri.fsPath : '';
     }
     private async getInterpretersPerResource(resource?: Uri) {
-        const locators = await this.getLocators(resource);
-        // tslint:disable-next-line:no-any
-        await window.showInformationMessage(`${locators.length} Locators ${locators.map(item => (item as any).constructor.name).join(',')}`);
-        const promises = locators.map(async provider => provider.getInterpreters(resource));
-        await window.showInformationMessage('Before waiting for result');
-        const listOfInterpreters = await Promise.all(promises);
-        await window.showInformationMessage('after waiting for result');
+        await window.showInformationMessage('Before retrieving individual locators');
+        const listOfInterpreters = await this.getLocators(resource);
+        await window.showInformationMessage('After retrieving individual locators');
         // tslint:disable-next-line:underscore-consistent-invocation
         return _.flatten(listOfInterpreters)
             .map(fixInterpreterDisplayName)
@@ -85,34 +81,43 @@ export class PythonInterpreterLocatorService implements IInterpreterLocatorServi
             }, []);
     }
     private async getLocators(resource?: Uri) {
-        const locators: IInterpreterLocatorService[] = [];
+        const interpreters = [];
+        let retrievedInterpreters = [];
+        const locatorNames: string[] = [];
+
         // The order of the services is important.
         if (this.platform.isWindows) {
-            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, WINDOWS_REGISTRY_SERVICE));
-            debugLog('1. Start using Windows Registry');
-            await locators[locators.length - 1].getInterpreters(resource);
-            debugLog('1. Done using Windows Registry');
+            locatorNames.push(WINDOWS_REGISTRY_SERVICE);
         }
-        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_SERVICE));
-        debugLog('2. Start using CondaEnv');
-        await locators[locators.length - 1].getInterpreters(resource);
-        debugLog('2. Done using CondaEnv');
-        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CONDA_ENV_FILE_SERVICE));
-        debugLog('3. Start using CondaFile');
-        await locators[locators.length - 1].getInterpreters(resource);
-        debugLog('3. Done using CondaFile');
-        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, VIRTUAL_ENV_SERVICE));
-        debugLog('4. Start using VirtualEnv');
-        await locators[locators.length - 1].getInterpreters(resource);
-        debugLog('4. Done using VirtualEnv');
-
+        locatorNames.push(CONDA_ENV_SERVICE);
+        locatorNames.push(CONDA_ENV_FILE_SERVICE);
+        locatorNames.push(VIRTUAL_ENV_SERVICE);
         if (!this.platform.isWindows) {
-            locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, KNOWN_PATH_SERVICE));
+            locatorNames.push(KNOWN_PATH_SERVICE);
         }
-        locators.push(this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, CURRENT_PATH_SERVICE));
-        debugLog('5. Start using CurrentPath');
-        await locators[locators.length - 1].getInterpreters(resource);
-        debugLog('5. Done using CurrentPath');
-        return locators;
+
+        locatorNames.push(CURRENT_PATH_SERVICE);
+
+        let counter = 0;
+        for (const locatorName of locatorNames) {
+            try {
+                counter += 1;
+                const locator = this.serviceContainer.get<IInterpreterLocatorService>(IInterpreterLocatorService, locatorName);
+                debugLog('='.repeat(50));
+                debugLog(`${counter}. Start using ${locatorName}`);
+                await window.showInformationMessage(`${counter}. Start using ${locatorName}`);
+                retrievedInterpreters = await locator.getInterpreters(resource);
+                debugLog(`${counter}. Done using ${locatorName}`);
+                debugLog('='.repeat(50));
+                await window.showInformationMessage(`${counter}. Done using ${locatorName}`);
+                interpreters.push(retrievedInterpreters);
+            } catch (ex) {
+                debugLog(`${counter}. Failed using ${locatorName}, ERROR`);
+                debugLog(`${ex.message}`);
+                debugLog(`${ex.toString()}`);
+            }
+        }
+
+        return interpreters;
     }
 }

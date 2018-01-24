@@ -50,22 +50,40 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
         debugLog(`End getInterpretersFromRegistry 2. HKLM x86, ${two.length}`);
         debugLog(`End getInterpretersFromRegistry 2. HKLM x86, ${JSON.stringify(two)}`);
 
-        const promises: Promise<CompanyInterpreter[]>[] = [
-            this.getCompanies(RegistryHive.HKCU, hkcuArch),
-            this.getCompanies(RegistryHive.HKLM, Architecture.x86)
-        ];
+        const companies: CompanyInterpreter[] = [];
+        debugLog(`Start getCompanies 3. HKCU ${hkcuArch}`);
+        const promise1 = await this.getCompanies(RegistryHive.HKCU, hkcuArch);
+        companies.push(...promise1);
+        debugLog(`End getCompanies 3. HKCU ${hkcuArch}, ${promise1.length}`);
+        debugLog(`End getCompanies 3. HKCU ${hkcuArch}, ${JSON.stringify(promise1)}`);
+
+        debugLog(`Start getCompanies 4. HKLM ${Architecture.x86}`);
+        const promise2 = await this.getCompanies(RegistryHive.HKLM, Architecture.x86);
+        companies.push(...promise2);
+        debugLog(`End getCompanies 4. HKLM ${Architecture.x86}, ${promise1.length}`);
+        debugLog(`End getCompanies 4. HKLM ${Architecture.x86}, ${JSON.stringify(promise1)}`);
+
+        // const promises: Promise<CompanyInterpreter[]>[] = [
+        //     this.getCompanies(RegistryHive.HKCU, hkcuArch),
+        //     this.getCompanies(RegistryHive.HKLM, Architecture.x86)
+        // ];
         // https://github.com/Microsoft/PTVS/blob/ebfc4ca8bab234d453f15ee426af3b208f3c143c/Python/Product/Cookiecutter/Shared/Interpreters/PythonRegistrySearch.cs#L44
         if (this.is64Bit) {
-
             debugLog(`Start getInterpretersFromRegistry 3. HKLM 64`);
             const three = await this.getCompanies(RegistryHive.HKLM, Architecture.x64);
             debugLog(`End getInterpretersFromRegistry 3. HKLM 64 ${three.length}`);
             debugLog(`End getInterpretersFromRegistry 3. HKLM 64 ${JSON.stringify(three)}`);
 
-            promises.push(this.getCompanies(RegistryHive.HKLM, Architecture.x64));
+            // promises.push(this.getCompanies(RegistryHive.HKLM, Architecture.x64));
+
+            debugLog(`Start getCompanies 5. HKLM ${Architecture.x64}`);
+            const promise3 = await this.getCompanies(RegistryHive.HKLM, Architecture.x64);
+            companies.push(...promise3);
+            debugLog(`End getCompanies 5. HKLM ${Architecture.x64}, ${promise3.length}`);
+            debugLog(`End getCompanies 5. HKLM ${Architecture.x64}, ${JSON.stringify(promise3)}`);
         }
 
-        const companies = await Promise.all<CompanyInterpreter[]>(promises);
+        // const companies = await Promise.all<CompanyInterpreter[]>(promises);
         debugLog(`Start getInterpretersFromRegistry (end get companies) ${companies.length}`);
         const flattenedList = _.flatten(companies).filter(item => item !== undefined && item !== null);
         debugLog(`Start getInterpretersFromRegistry (end get companies) flattened ${flattenedList.length}`);
@@ -93,28 +111,33 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
             }, []);
     }
     private async getCompanies(hive: RegistryHive, arch?: Architecture): Promise<CompanyInterpreter[]> {
-        debugLog(`Start getCompanies`);
+        debugLog(`Start getCompanies ${hive}, ${arch}`);
         return this.registry.getKeys('\\Software\\Python', hive, arch)
             .then(companyKeys => companyKeys
                 .filter(companyKey => CompaniesToIgnore.indexOf(path.basename(companyKey).toUpperCase()) === -1)
                 .map(companyKey => {
-                    debugLog(`End getCompanies`);
+                    debugLog(`End getCompanies ${hive}, ${arch}`);
                     return { companyKey, hive, arch };
                 }))
             .catch(ex => {
-                debugLog(`End getCompanies with errors`);
+                debugLog(`End getCompanies ${hive}, ${arch}, with errors`);
+                debugLog(`${ex.message}`);
+                debugLog(`${ex.toString()}`);
                 console.error(`End getCompanies with errors`, ex);
                 return Promise.reject(ex);
-            })
+            });
     }
     private async getInterpretersForCompany(companyKey: string, hive: RegistryHive, arch?: Architecture) {
-        debugLog(`Start getInterpretersForCompany`);
+        debugLog(`Start getInterpretersForCompany ${companyKey}, ${hive}, ${arch}`);
         const tagKeys = await this.registry.getKeys(companyKey, hive, arch);
-        debugLog(`End getInterpretersForCompany`);
-        return Promise.all(tagKeys.map(tagKey => this.getInreterpreterDetailsForCompany(tagKey, companyKey, hive, arch)));
+        debugLog(`End getInterpretersForCompany ${companyKey}, ${hive}, ${arch}`);
+        debugLog(`Start getInterpretersForCompany (gtt details) ${companyKey}, ${hive}, ${arch}`);
+        const details = await Promise.all(tagKeys.map(tagKey => this.getInreterpreterDetailsForCompany(tagKey, companyKey, hive, arch)));
+        debugLog(`End getInterpretersForCompany (got details) ${companyKey}, ${hive}, ${arch}`);
+        return details;
     }
     private getInreterpreterDetailsForCompany(tagKey: string, companyKey: string, hive: RegistryHive, arch?: Architecture): Promise<PythonInterpreter | undefined | null> {
-        debugLog(`Start getInreterpreterDetailsForCompany`);
+        debugLog(`Start getInreterpreterDetailsForCompany ${tagKey}, ${companyKey}, ${hive}, ${arch}`);
         const key = `${tagKey}\\InstallPath`;
         type InterpreterInformation = null | undefined | {
             installPath: string,
@@ -124,30 +147,40 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
             companyDisplayName?: string
         };
         return this.registry.getValue(key, hive, arch)
-            .then(installPath => {
+            .then(async installPath => {
                 // Install path is mandatory.
                 if (!installPath) {
-                    return Promise.resolve(null);
+                    return null;
                 }
                 // Check if 'ExecutablePath' exists.
                 // Remember Python 2.7 doesn't have 'ExecutablePath' (there could be others).
                 // Treat all other values as optional.
-                return Promise.all([
-                    Promise.resolve(installPath),
-                    this.registry.getValue(key, hive, arch, 'ExecutablePath'),
-                    // tslint:disable-next-line:no-non-null-assertion
-                    this.getInterpreterDisplayName(tagKey, companyKey, hive, arch),
-                    this.registry.getValue(tagKey, hive, arch, 'SysVersion'),
-                    this.getCompanyDisplayName(companyKey, hive, arch)
-                ])
-                    .then(([installedPath, executablePath, displayName, version, companyDisplayName]) => {
-                        companyDisplayName = AnacondaCompanyNames.indexOf(companyDisplayName) === -1 ? companyDisplayName : AnacondaCompanyName;
-                        // tslint:disable-next-line:prefer-type-cast
-                        return { installPath: installedPath, executablePath, displayName, version, companyDisplayName } as InterpreterInformation;
-                    });
+                // return Promise.all([
+                const installedPath = installPath;
+                debugLog(`installedPath = ${installedPath}`);
+
+                const executablePath = await this.registry.getValue(key, hive, arch, 'ExecutablePath');
+                debugLog(`executablePath = ${executablePath}`);
+
+                // tslint:disable-next-line:no-non-null-assertion
+                const displayName = await this.getInterpreterDisplayName(tagKey, companyKey, hive, arch);
+                debugLog(`displayName = ${displayName}`);
+
+                const version = await this.registry.getValue(tagKey, hive, arch, 'SysVersion');
+                debugLog(`version = ${version}`);
+                let companyDisplayName = await this.getCompanyDisplayName(companyKey, hive, arch);
+                debugLog(`companyDisplayName = ${companyDisplayName}`);
+
+                // ])
+                // .then(([installedPath, executablePath, displayName, version, companyDisplayName]) => {
+                companyDisplayName = AnacondaCompanyNames.indexOf(companyDisplayName) === -1 ? companyDisplayName : AnacondaCompanyName;
+                // tslint:disable-next-line:prefer-type-cast
+                return { installPath: installedPath, executablePath, displayName, version, companyDisplayName } as InterpreterInformation;
+                // });
             })
             .then((interpreterInfo?: InterpreterInformation) => {
-                debugLog(`End getInreterpreterDetailsForCompany`);
+                debugLog(`End getInreterpreterDetailsForCompany ${tagKey}, ${companyKey}, ${hive}, ${arch}`);
+                debugLog(`End getInreterpreterDetailsForCompany ${tagKey}, ${companyKey}, ${hive}, ${arch}, ${JSON.stringify(interpreterInfo)}`);
                 if (!interpreterInfo) {
                     return;
                 }
@@ -167,7 +200,9 @@ export class WindowsRegistryService implements IInterpreterLocatorService {
             })
             .then(interpreter => interpreter ? fs.pathExists(interpreter.path).catch(() => false).then(exists => exists ? interpreter : null) : null)
             .catch(error => {
-                debugLog(`End getInreterpreterDetailsForCompany with errors`);
+                debugLog(`End getInreterpreterDetailsForCompany ${tagKey}, ${companyKey}, ${hive}, ${arch}`);
+                debugLog(`${error.message}`);
+                debugLog(`${error.toString()}`);
                 console.error(`Failed to retrieve interpreter details for company ${companyKey},tag: ${tagKey}, hive: ${hive}, arch: ${arch}`);
                 console.error(error);
                 return null;

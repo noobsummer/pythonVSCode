@@ -5,7 +5,7 @@ import { IVirtualEnvironmentIdentifier, IVirtualEnvironmentManager } from './typ
 export class VirtualEnvironmentManager implements IVirtualEnvironmentManager {
     constructor( @multiInject(IVirtualEnvironmentIdentifier) private envs: IVirtualEnvironmentIdentifier[]) {
     }
-    public detect(pythonPath: string): Promise<IVirtualEnvironmentIdentifier | void> {
+    public detect(pythonPath: string): Promise<IVirtualEnvironmentIdentifier | undefined> {
         const promises = this.envs
             .map(item => item.detect(pythonPath)
                 .then(result => {

@@ -28,22 +28,43 @@ export class VirtualEnvService implements IInterpreterLocatorService {
             .then(listOfInterpreters => _.flatten(listOfInterpreters));
     }
     private async lookForInterpretersInVenvs(pathToCheck: string) {
-        debugLog(`Start lookForInterpretersInVenvs`);
-        const subDirs = await fsReaddirAsync(pathToCheck);
-        debugLog(`End lookForInterpretersInVenvs`);
-        return Promise.resolve(subDirs)
-            .then(subDirs => Promise.all(this.getProspectiveDirectoriesForLookup(subDirs)))
-            .then(dirs => dirs.filter(dir => dir.length > 0))
-            .then(dirs => Promise.all(dirs.map(lookForInterpretersInDirectory)))
+        try {
+            debugLog(`Start lookForInterpretersInVenvs ${pathToCheck}`);
+            const subDirs = await fsReaddirAsync(pathToCheck);
+            debugLog(`End lookForInterpretersInVenvs.fsReaddirAsync ${pathToCheck}`);
+
+            debugLog(`Start lookForInterpretersInVenvs.getProspectiveDirectoriesForLookup ${pathToCheck}`);
+            let dirs = await Promise.all(this.getProspectiveDirectoriesForLookup(subDirs));
+            debugLog(`End lookForInterpretersInVenvs.getProspectiveDirectoriesForLookup ${dirs.join(', ')}`);
+            dirs = dirs.filter(dir => dir.length > 0);
+
+            const pathsWithInterpreters = await Promise.all(dirs.map(async item => {
+                debugLog(`Start lookForInterpretersInVenvs.lookForInterpretersInDirectory ${item}`);
+                const list = await lookForInterpretersInDirectory(item);
+                debugLog(`End lookForInterpretersInVenvs.lookForInterpretersInDirectory ${item}`);
+                return list;
+            }));
             // tslint:disable-next-line:underscore-consistent-invocation
-            .then(pathsWithInterpreters => _.flatten(pathsWithInterpreters))
-            .then(interpreters => Promise.all(interpreters.map(interpreter => this.getVirtualEnvDetails(interpreter))))
-            .catch((err) => {
-                debugLog(`Python Extension (lookForInterpretersInVenvs):`);
-                console.error('Python Extension (lookForInterpretersInVenvs):', err);
-                // Ignore exceptions.
-                return [] as PythonInterpreter[];
-            });
+            const flattenedList = _.flatten(pathsWithInterpreters);
+            debugLog(`Start lookForInterpretersInVenvs.flattenedList ${flattenedList.length}`);
+            const interpreters = await Promise.all(flattenedList.map(async interpreter => {
+                debugLog(`Start lookForInterpretersInVenvs.getVirtualEnvDetails ${interpreter}`);
+                const item = await this.getVirtualEnvDetails(interpreter);
+                debugLog(`End lookForInterpretersInVenvs.getVirtualEnvDetails ${interpreter}`);
+                return item;
+            }));
+
+            debugLog(`End lookForInterpretersInVenvs ${interpreters.length}`);
+            debugLog(`End lookForInterpretersInVenvs ${JSON.stringify(interpreters)}`);
+
+        } catch (err) {
+            debugLog(`Python Extension (lookForInterpretersInVenvs): ${pathToCheck}, ERROR`);
+            debugLog(`${err.message}`);
+            debugLog(`${err.toString()}`);
+            console.error('Python Extension (lookForInterpretersInVenvs):', err);
+            // Ignore exceptions.
+            return [] as PythonInterpreter[];
+        }
     }
     private getProspectiveDirectoriesForLookup(subDirs: string[]) {
         const dirToLookFor = IS_WINDOWS ? 'SCRIPTS' : 'BIN';
@@ -64,24 +85,25 @@ export class VirtualEnvService implements IInterpreterLocatorService {
     }
     private async getVirtualEnvDetails(interpreter: string): Promise<PythonInterpreter> {
         debugLog(`Start getVirtualEnvDetails ${interpreter}`);
-        return Promise.all([
-            this.versionProvider.getVersion(interpreter, path.basename(interpreter)),
-            this.virtualEnvMgr.detect(interpreter)
-        ])
-            .then(([displayName, virtualEnv]) => {
-                debugLog(`End getVirtualEnvDetails ${interpreter}`);
-                const virtualEnvSuffix = virtualEnv ? virtualEnv.name : this.getVirtualEnvironmentRootDirectory(interpreter);
-                return {
-                    displayName: `${displayName} (${virtualEnvSuffix})`.trim(),
-                    path: interpreter,
-                    type: virtualEnv ? virtualEnv.type : InterpreterType.Unknown
-                };
-            })
-            .catch(ex => {
-                debugLog(`End getVirtualEnvDetails ${interpreter} with errors`);
-                console.error(`End getVirtualEnvDetails ${interpreter} with errors`, ex);
-                return Promise.reject(ex);
-            })
+        try {
+            const displayName = await this.versionProvider.getVersion(interpreter, path.basename(interpreter));
+            debugLog(`Start getVirtualEnvDetails ${interpreter}, displayName = ${displayName}`);
+            const virtualEnv = await this.virtualEnvMgr.detect(interpreter);
+            debugLog(`Start getVirtualEnvDetails ${interpreter}, virtualEnv = ${virtualEnv}`);
+            const virtualEnvSuffix = virtualEnv ? virtualEnv.name : this.getVirtualEnvironmentRootDirectory(interpreter);
+            debugLog(`End getVirtualEnvDetails ${interpreter}, virtualEnvSuffix = ${virtualEnvSuffix}`);
+            return {
+                displayName: `${displayName} (${virtualEnvSuffix})`.trim(),
+                path: interpreter,
+                type: virtualEnv ? virtualEnv.type : InterpreterType.Unknown
+            };
+        } catch (ex) {
+            debugLog(`End getVirtualEnvDetails ${interpreter} with errors`);
+            debugLog(`${ex.message}`);
+            debugLog(`${ex.toString()}`);
+            console.error(`End getVirtualEnvDetails ${interpreter} with errors`, ex);
+            return Promise.reject(ex);
+        }
     }
     private getVirtualEnvironmentRootDirectory(interpreter: string) {
         return path.basename(path.dirname(path.dirname(interpreter)));

@@ -19,45 +19,57 @@ export class CurrentPathService implements IInterpreterLocatorService {
     // tslint:disable-next-line:no-empty
     public dispose() { }
     private async suggestionsFromKnownPaths(resource?: Uri) {
-        debugLog(`Start suggestionsFromKnownPaths`);
-        const currentPythonInterpreter = await this.getInterpreter(PythonSettings.getInstance(resource).pythonPath, '').then(interpreter => [interpreter]);
-        debugLog(`End suggestionsFromKnownPaths ${JSON.stringify(currentPythonInterpreter)}`);
-        debugLog(`Start suggestionsFromKnownPaths python`);
-        const python = await this.getInterpreter('python', '').then(interpreter => [interpreter]);
-        debugLog(`End suggestionsFromKnownPaths python ${JSON.stringify(python)}`);
-        debugLog(`Start suggestionsFromKnownPaths python2`);
-        const python2 = await this.getInterpreter('python2', '').then(interpreter => [interpreter]);
-        debugLog(`End suggestionsFromKnownPaths python2 ${JSON.stringify(python2)}`);
-        debugLog(`Start suggestionsFromKnownPaths python2`);
-        const python3 = await this.getInterpreter('python3', '').then(interpreter => [interpreter]);
-        debugLog(`End suggestionsFromKnownPaths python3 ${JSON.stringify(python3)}`);
-        return Promise.resolve([currentPythonInterpreter, python, python2, python3])
-            // tslint:disable-next-line:underscore-consistent-invocation
-            .then(listOfInterpreters => _.flatten(listOfInterpreters))
-            .then(interpreters => interpreters.filter(item => item.length > 0))
+        try {
+            debugLog(`Start suggestionsFromKnownPaths`);
+            const currentPythonInterpreter = await this.getInterpreter(PythonSettings.getInstance(resource).pythonPath, '').then(interpreter => [interpreter]);
+            debugLog(`End suggestionsFromKnownPaths ${JSON.stringify(currentPythonInterpreter)}`);
+            debugLog(`Start suggestionsFromKnownPaths python`);
+            const python = await this.getInterpreter('python', '').then(interpreter => [interpreter]);
+            debugLog(`End suggestionsFromKnownPaths python ${JSON.stringify(python)}`);
+            debugLog(`Start suggestionsFromKnownPaths python2`);
+            const python2 = await this.getInterpreter('python2', '').then(interpreter => [interpreter]);
+            debugLog(`End suggestionsFromKnownPaths python2 ${JSON.stringify(python2)}`);
+            debugLog(`Start suggestionsFromKnownPaths python2`);
+            const python3 = await this.getInterpreter('python3', '').then(interpreter => [interpreter]);
+            debugLog(`End suggestionsFromKnownPaths python3 ${JSON.stringify(python3)}`);
+            const interpreters = _.flatten([currentPythonInterpreter, python, python2, python3]).filter(item => item.length > 0);
             // tslint:disable-next-line:promise-function-async
-            .then(interpreters => Promise.all(interpreters.map(interpreter => this.getInterpreterDetails(interpreter))));
+            // tslint:disable-next-line:no-unnecessary-local-variable
+            const items = await Promise.all(interpreters.map(async interpreter => {
+                debugLog(`Start suggestionsFromKnownPaths.getInterpreterDetails ${interpreter}`);
+                const item = this.getInterpreterDetails(interpreter);
+                debugLog(`End suggestionsFromKnownPaths.getInterpreterDetails ${interpreter}`);
+                return item;
+            }));
+            return items;
+        } catch (ex) {
+            debugLog(`End suggestionsFromKnownPaths, error`);
+            debugLog(`${ex.message}`);
+            debugLog(`${ex.toString()}`);
+            return [];
+        }
     }
     private async getInterpreterDetails(interpreter: string) {
-        debugLog(`Start getInterpreterDetails: ${interpreter}`);
-        return Promise.all([
-            this.versionProvider.getVersion(interpreter, path.basename(interpreter)),
-            this.virtualEnvMgr.detect(interpreter)
-        ])
-            .then(([displayName, virtualEnv]) => {
-                debugLog(`End getInterpreterDetails: ${interpreter}`);
-                displayName += virtualEnv ? ` (${virtualEnv.name})` : '';
-                return {
-                    displayName,
-                    path: interpreter,
-                    type: InterpreterType.Unknown
-                };
-            })
-            .catch(ex => {
-                debugLog(`End getInterpreterDetails with errors: ${interpreter}`);
-                console.error(`End getInterpreterDetails with errors: ${interpreter}`, ex);
-                return Promise.reject(ex);
-            });
+        try {
+            debugLog(`Start suggestionsFromKnownPaths.getInterpreterDetails: ${interpreter}`);
+            let displayName = await this.versionProvider.getVersion(interpreter, path.basename(interpreter));
+            debugLog(`Start suggestionsFromKnownPaths.getInterpreterDetails: ${interpreter}, displayName = ${displayName}`);
+            const virtualEnv = await this.virtualEnvMgr.detect(interpreter);
+            debugLog(`Start suggestionsFromKnownPaths.getInterpreterDetails: ${interpreter}, virtualEnv = ${virtualEnv}`);
+            debugLog(`End suggestionsFromKnownPaths.getInterpreterDetails: ${interpreter}`);
+            displayName += virtualEnv ? ` (${virtualEnv.name})` : '';
+            return {
+                displayName,
+                path: interpreter,
+                type: InterpreterType.Unknown
+            };
+        } catch (ex) {
+            debugLog(`End suggestionsFromKnownPaths.getInterpreterDetails with errors: ${interpreter}`);
+            debugLog(`${ex.message}`);
+            debugLog(`${ex.toString()}`);
+            console.error(`End getInterpreterDetails with errors: ${interpreter}`, ex);
+            return Promise.reject(ex);
+        }
     }
     private async getInterpreter(pythonPath: string, defaultValue: string) {
         debugLog(`Start getInterpreter sys.exec: ${pythonPath}`);
