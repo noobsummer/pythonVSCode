@@ -57,6 +57,8 @@ export class VirtualEnvService implements IInterpreterLocatorService {
             debugLog(`End lookForInterpretersInVenvs ${interpreters.length}`);
             debugLog(`End lookForInterpretersInVenvs ${JSON.stringify(interpreters)}`);
 
+            return interpreters;
+
         } catch (err) {
             debugLog(`Python Extension (lookForInterpretersInVenvs): ${pathToCheck}, ERROR`);
             debugLog(`${err.message}`);
