@@ -108,9 +108,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const pythonInstaller = new PythonInstaller(serviceContainer);
 
+    await window.showInformationMessage('Step 1 (Start)');
     debugLog('Start getting paths in extension.ts');
     const pathService = serviceManager.get<IInterpreterLocatorService>(IInterpreterLocatorService, CURRENT_PATH_SERVICE);
     const output = await pathService.getInterpreters();
+    await window.showInformationMessage('Step 1 (Completed)');
     debugLog('End getting paths in extension.ts');
     debugLog(`End getting paths in extension.ts ${JSON.stringify(output)}`);
 

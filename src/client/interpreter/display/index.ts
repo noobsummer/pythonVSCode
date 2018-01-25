@@ -22,12 +22,12 @@ export class InterpreterDisplay implements Disposable {
         //
     }
     public async refresh() {
-        const wkspc = getActiveWorkspaceUri();
-        if (!wkspc) {
-            return;
-        }
-        const pythonPath = await this.getFullyQualifiedPathToInterpreter(PythonSettings.getInstance(wkspc.folderUri).pythonPath);
-        await this.updateDisplay(pythonPath, wkspc.folderUri);
+        // const wkspc = getActiveWorkspaceUri();
+        // if (!wkspc) {
+        //     return;
+        // }
+        // const pythonPath = await this.getFullyQualifiedPathToInterpreter(PythonSettings.getInstance(wkspc.folderUri).pythonPath);
+        // await this.updateDisplay(pythonPath, wkspc.folderUri);
     }
     private async getInterpreters(resource?: Uri) {
         return this.interpreterLocator.getInterpreters(resource);
