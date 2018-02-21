@@ -15,6 +15,5 @@ export function setOutputChannel(outputChannel: OutputChannel) {
     channel = outputChannel;
 }
 export function debugLog(msg: string) {
-    channel.appendLine(msg);
     fs.appendFile(logFile, `${EOL}@ ${new Date().toString()}: ${msg}`);
 }

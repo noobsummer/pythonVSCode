@@ -66,6 +66,13 @@ const PYTHON: vscode.DocumentFilter = { language: 'python' };
 const activationDeferred = createDeferred<void>();
 export const activated = activationDeferred.promise;
 
+process.on('uncaughtException', (err: Error) => {
+    debugLog('uncaughtException');
+    debugLog(err.message);
+    debugLog(err.name);
+    debugLog(err.stack ? err.stack : 'No Stack');
+});
+
 // tslint:disable-next-line:max-func-body-length
 export async function activate(context: vscode.ExtensionContext) {
     const cont = new Container();
