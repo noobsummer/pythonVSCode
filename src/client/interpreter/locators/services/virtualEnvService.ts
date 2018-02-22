@@ -14,7 +14,7 @@ const untildify = require('untildify');
 
 @injectable()
 export class VirtualEnvService implements IInterpreterLocatorService {
-    public constructor( @inject(IKnownSearchPathsForVirtualEnvironments) private knownSearchPaths: string[],
+    public constructor(@inject(IKnownSearchPathsForVirtualEnvironments) private knownSearchPaths: string[],
         @inject(IVirtualEnvironmentManager) private virtualEnvMgr: IVirtualEnvironmentManager,
         @inject(IInterpreterVersionService) private versionProvider: IInterpreterVersionService) { }
     public async getInterpreters(resource?: Uri) {
@@ -23,6 +23,8 @@ export class VirtualEnvService implements IInterpreterLocatorService {
     // tslint:disable-next-line:no-empty
     public dispose() { }
     private async suggestionsFromKnownVenvs() {
+        debugLog('Start suggestionsFromKnownVenvs');
+        debugLog(`knownSearchPaths = ${this.knownSearchPaths.join(',')}`);
         return Promise.all(this.knownSearchPaths.map(dir => this.lookForInterpretersInVenvs(dir)))
             // tslint:disable-next-line:underscore-consistent-invocation
             .then(listOfInterpreters => _.flatten(listOfInterpreters));
