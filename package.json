@@ -4,6 +4,7 @@
     "description": "Linting, Debugging (multi-threaded, remote), Intellisense, code formatting, refactoring, unit tests, snippets, and more.",
     "version": "2018.5.0-alpha",
     "publisher": "ms-python",
+    "enableProposedApi": true,
     "author": {
         "name": "Microsoft Corporation"
     },
