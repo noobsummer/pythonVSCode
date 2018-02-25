@@ -3,7 +3,7 @@
 
 import { expect } from 'chai';
 import * as path from 'path';
-import { CancellationTokenSource, FoldingRange, TextDocument } from 'vscode';
+import { CancellationTokenSource, FoldingRange } from 'vscode';
 import { DocStringFoldingProvider } from '../../client/providers/docStringFoldingProvider';
 import { openTextDocument } from '../common';
 type FileFoldingRanges = { file: string, ranges: FoldingRange[] };
