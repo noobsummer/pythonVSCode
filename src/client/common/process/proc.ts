@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { spawn } from 'child_process';
+import { ChildProcess, spawn } from 'child_process';
 import { inject, injectable } from 'inversify';
 import * as Rx from 'rxjs';
 import { Disposable } from 'vscode';
@@ -11,7 +11,7 @@ import { ExecutionResult, IBufferDecoder, IProcessService, ObservableExecutionRe
 
 @injectable()
 export class ProcessService implements IProcessService {
-    constructor( @inject(IBufferDecoder) private decoder: IBufferDecoder) { }
+    constructor(@inject(IBufferDecoder) private decoder: IBufferDecoder) { }
     public execObservable(file: string, args: string[], options: SpawnOptions = {}): ObservableExecutionResult<string> {
         const encoding = options.encoding = typeof options.encoding === 'string' && options.encoding.length > 0 ? options.encoding : DEFAULT_ENCODING;
         delete options.encoding;
@@ -26,8 +26,16 @@ export class ProcessService implements IProcessService {
             spawnOptions.env.PYTHONIOENCODING = 'utf-8';
         }
 
-        const proc = spawn(file, args, spawnOptions);
+        let proc: ChildProcess | undefined;
+        let procExitErr: Error | undefined;
         let procExited = false;
+
+        try {
+            proc = spawn(file, args, spawnOptions);
+        } catch (ex) {
+            procExitErr = ex;
+            procExited = true;
+        }
 
         const output = new Rx.Observable<Output<string>>(subscriber => {
             const disposables: Disposable[] = [];
@@ -39,8 +47,8 @@ export class ProcessService implements IProcessService {
 
             if (options.token) {
                 disposables.push(options.token.onCancellationRequested(() => {
-                    if (!procExited && !proc.killed) {
-                        proc.kill();
+                    if (!procExited && !proc!.killed) {
+                        proc!.kill();
                         procExited = true;
                     }
                 }));
@@ -55,22 +63,30 @@ export class ProcessService implements IProcessService {
                 }
             };
 
-            on(proc.stdout, 'data', (data: Buffer) => sendOutput('stdout', data));
-            on(proc.stderr, 'data', (data: Buffer) => sendOutput('stderr', data));
+            if (proc) {
+                on(proc.stdout, 'data', (data: Buffer) => sendOutput('stdout', data));
+                on(proc.stderr, 'data', (data: Buffer) => sendOutput('stderr', data));
 
-            proc.once('close', () => {
-                procExited = true;
-                subscriber.complete();
+                proc.once('close', () => {
+                    procExited = true;
+                    subscriber.complete();
+                    disposables.forEach(disposable => disposable.dispose());
+                });
+                proc.on('error', ex => {
+                    if (procExited) {
+                        return;
+                    }
+                    procExited = true;
+                    subscriber.error(ex);
+                    disposables.forEach(disposable => disposable.dispose());
+                });
+            } else {
+                subscriber.error(procExitErr);
                 disposables.forEach(disposable => disposable.dispose());
-            });
-            proc.once('error', ex => {
-                procExited = true;
-                subscriber.error(ex);
-                disposables.forEach(disposable => disposable.dispose());
-            });
+            }
         });
 
-        return { proc, out: output };
+        return { proc: proc!, out: output };
     }
     public async exec(file: string, args: string[], options: SpawnOptions = {}): Promise<ExecutionResult<string>> {
         const encoding = options.encoding = typeof options.encoding === 'string' && options.encoding.length > 0 ? options.encoding : DEFAULT_ENCODING;
@@ -85,7 +101,12 @@ export class ProcessService implements IProcessService {
         if (!spawnOptions.env.PYTHONIOENCODING) {
             spawnOptions.env.PYTHONIOENCODING = 'utf-8';
         }
-        const proc = spawn(file, args, spawnOptions);
+        let proc: ChildProcess;
+        try {
+            proc = spawn(file, args, spawnOptions);
+        } catch (ex) {
+            return Promise.reject(ex);
+        }
         const deferred = createDeferred<ExecutionResult<string>>();
         const disposables: Disposable[] = [];
 
@@ -127,7 +148,10 @@ export class ProcessService implements IProcessService {
             }
             disposables.forEach(disposable => disposable.dispose());
         });
-        proc.once('error', ex => {
+        proc.on('error', ex => {
+            if (deferred.completed) {
+                return;
+            }
             deferred.reject(ex);
             disposables.forEach(disposable => disposable.dispose());
         });
