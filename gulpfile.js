@@ -24,6 +24,7 @@ const fs = require('fs');
 const remapIstanbul = require('remap-istanbul');
 const istanbul = require('istanbul');
 const glob = require('glob');
+const os = require('os');
 
 /**
 * Hygiene works by creating cascading subsets of all our files and
@@ -68,7 +69,8 @@ const copyrightHeader = [
     '// Licensed under the MIT License.',
     '',
     '\'use strict\';'
-].join('\n');
+];
+const copyrightHeaders = [copyrightHeader.join('\n'), copyrightHeader.join('\r\n')];
 
 gulp.task('hygiene', () => run({ mode: 'all', skipFormatCheck: true, skipIndentationCheck: true }));
 
@@ -146,10 +148,13 @@ const hygiene = (options) => {
     console.log(colors.blue('Hygiene started.'));
 
     const copyrights = es.through(function (file) {
-        if (addedFiles.indexOf(file.path) !== -1 && file.contents.toString('utf8').indexOf(copyrightHeader) !== 0) {
-            // Use tslint format.
-            console.error(`ERROR: (copyright) ${file.relative}[1,1]: Missing or bad copyright statement`);
-            errorCount++;
+        if (addedFiles.indexOf(file.path) !== -1) {
+            const contents = file.contents.toString('utf8');
+            if (!copyrightHeaders.some(header => contents.indexOf(header) === 0)) {
+                // Use tslint format.
+                console.error(`ERROR: (copyright) ${file.relative}[1,1]: Missing or bad copyright statement`);
+                errorCount++;
+            }
         }
 
         this.emit('data', file);
