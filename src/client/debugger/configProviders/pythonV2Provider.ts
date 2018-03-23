@@ -21,7 +21,13 @@ export class PythonV2DebugConfigurationProvider extends BaseConfigurationProvide
 
         // Add PTVSD specific flags.
         const ptvsdDebugConfigurationFlags = debugConfiguration as PTVSDDebugConfiguration;
-        ptvsdDebugConfigurationFlags.redirectOutput = Array.isArray(debugConfiguration.debugOptions) && debugConfiguration.debugOptions.indexOf('RedirectOutput') >= 0;
-        ptvsdDebugConfigurationFlags.fixFilePathCase = this.serviceContainer.get<IPlatformService>(IPlatformService).isWindows;
+        const options: string[] = [];
+        if (Array.isArray(debugConfiguration.debugOptions) && debugConfiguration.debugOptions.indexOf('RedirectOutput') >= 0) {
+            options.push('REDIRECT_OUTPUT=True');
+        }
+        if (this.serviceContainer.get<IPlatformService>(IPlatformService).isWindows) {
+            options.push('FIX_FILE_PATH_CASE=True');
+        }
+        ptvsdDebugConfigurationFlags.options = options.join(';');
     }
 }

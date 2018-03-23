@@ -274,8 +274,8 @@ import { IServiceContainer } from '../../../client/ioc/types';
 
             const debugConfig = await debugProvider.resolveDebugConfiguration!(workspaceFolder, { debugOptions: ['RedirectOutput'] } as any);
 
-            expect(debugConfig).to.have.property('redirectOutput');
-            expect((debugConfig as any).redirectOutput).to.be.equal(true, 'invalid value');
+            expect(debugConfig).to.have.property('options');
+            expect((debugConfig as any).options).contains('REDIRECT_OUTPUT=True', 'invalid value');
         });
 
         async function testFixFilePathCase(isWindows: boolean, isMac: boolean, isLinux: boolean) {
@@ -287,8 +287,13 @@ import { IServiceContainer } from '../../../client/ioc/types';
 
             const debugConfig = await debugProvider.resolveDebugConfiguration!(workspaceFolder, {} as DebugConfiguration);
 
-            expect(debugConfig).to.have.property('fixFilePathCase');
-            expect((debugConfig as any).fixFilePathCase).to.be.equal(isWindows, 'invalid value (true only for windows)');
+            expect(debugConfig).to.have.property('options');
+            const options = (debugConfig as any).options as string;
+            if (isWindows) {
+                expect(options).contains('FIX_FILE_PATH_CASE=True');
+            } else {
+                expect(options).not.contains('FIX_FILE_PATH_CASE=True');
+            }
         }
         test('Test fixFilePathCase for Windows', async () => {
             if (provider.debugType === 'python') {
