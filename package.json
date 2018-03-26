@@ -793,7 +793,7 @@
                         "description": "%python.snippet.launch.flask.description%",
                         "body": {
                             "name": "Flask",
-                            "type": "python",
+                            "type": "pythonExperimental",
                             "request": "launch",
                             "module": "flask",
                             "env": {
@@ -809,7 +809,7 @@
                                 "Flask"
                             ]
                         }
-                    },                    
+                    },
                     {
                         "label": "Python Experimental: PySpark",
                         "description": "%python.snippet.launch.pyspark.description%",
@@ -983,6 +983,28 @@
                             "runserver",
                             "--noreload",
                             "--nothreading"
+                        ],
+                        "debugOptions": [
+                            "RedirectOutput",
+                            "Django"
+                        ]
+                    },
+                    {
+                        "label": "Python Experimental: Flask",
+                        "type": "pythonExperimental",
+                        "request": "launch",
+                        "module": "flask",
+                        "env": {
+                            "FLASK_APP": "${workspaceFolder}/app.py"
+                        },
+                        "args": [
+                            "run",
+                            "--no-debugger",
+                            "--no-reload"
+                        ],
+                        "debugOptions": [
+                            "RedirectOutput",
+                            "Flask"
                         ]
                     },
                     {
