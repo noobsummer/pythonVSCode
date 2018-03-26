@@ -363,7 +363,7 @@
                             ],
                             "debugOptions": [
                                 "RedirectOutput",
-                                "DjangoDebugging"
+                                "Django"
                             ]
                         }
                     },
@@ -515,7 +515,7 @@
                                         "RedirectOutput",
                                         "DebugStdLib",
                                         "BreakOnSystemExitZero",
-                                        "DjangoDebugging",
+                                        "Django",
                                         "Sudo",
                                         "IgnoreDjangoTemplateWarnings",
                                         "Pyramid"
@@ -663,7 +663,7 @@
                         ],
                         "debugOptions": [
                             "RedirectOutput",
-                            "DjangoDebugging"
+                            "Django"
                         ]
                     },
                     {
@@ -781,9 +781,35 @@
                                 "runserver",
                                 "--noreload",
                                 "--nothreading"
+                            ],
+                            "debugOptions": [
+                                "RedirectOutput",
+                                "Django"
                             ]
                         }
                     },
+                    {
+                        "label": "Python Experimental: Flask",
+                        "description": "%python.snippet.launch.flask.description%",
+                        "body": {
+                            "name": "Flask",
+                            "type": "python",
+                            "request": "launch",
+                            "module": "flask",
+                            "env": {
+                                "FLASK_APP": "^\"\\${workspaceFolder}/app.py\""
+                            },
+                            "args": [
+                                "run",
+                                "--no-debugger",
+                                "--no-reload"
+                            ],
+                            "debugOptions": [
+                                "RedirectOutput",
+                                "Flask"
+                            ]
+                        }
+                    },                    
                     {
                         "label": "Python Experimental: PySpark",
                         "description": "%python.snippet.launch.pyspark.description%",
@@ -903,8 +929,8 @@
                                     "enum": [
                                         "RedirectOutput",
                                         "DebugStdLib",
-                                        "DjangoDebugging",
-                                        "FlaskDebugging",
+                                        "Django",
+                                        "Flask",
                                         "Sudo",
                                         "Pyramid"
                                     ]
