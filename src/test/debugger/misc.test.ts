@@ -457,7 +457,7 @@ let testCounter = 0;
             });
             console.log('step2');
             const pythonFile = path.join(debugFilesPath, 'multiThread.py');
-            const breakpointLocation = { path: pythonFile, column: 1, line: 11 };
+            const breakpointLocation = { path: pythonFile, column: 1, line: 15 };
             await debugClient.setBreakpointsRequest({
                 lines: [breakpointLocation.line],
                 breakpoints: [{ line: breakpointLocation.line, column: breakpointLocation.column }],
