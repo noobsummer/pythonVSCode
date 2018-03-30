@@ -41,6 +41,7 @@ let testCounter = 0;
             if (!IS_MULTI_ROOT_TEST || !TEST_DEBUGGER) {
                 this.skip();
             }
+            this.timeout(30000);
             await new Promise(resolve => setTimeout(resolve, 1000));
             debugClient = createDebugAdapter();
             debugClient.defaultTimeout = DEBUGGER_TIMEOUT;
