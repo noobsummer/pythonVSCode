@@ -11,6 +11,7 @@ def bar():
 
 def foo(x):
     while True:
+        print('step2-{}'.format(threading.current_thread().getName()))
         print("step2-while-loop")
         bar()
 print("step3")
