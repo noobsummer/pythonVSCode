@@ -5,14 +5,13 @@ import time
 print("step2")
 
 def bar():
-    print("step2-loop")
+    print("step2-{},bar".format(threading.current_thread().getName()))
     time.sleep(2)
-    print("abcdef")
+    print("print-{},bar".format(threading.current_thread().getName()))
 
 def foo(x):
     while True:
-        print('step2-{}'.format(threading.current_thread().getName()))
-        print("step2-while-loop")
+        print("step2-{},foo-loop".format(threading.current_thread().getName()))
         bar()
 print("step3")
 threading.Thread(target=lambda: foo(2), name="foo").start()
