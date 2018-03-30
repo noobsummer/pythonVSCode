@@ -69,13 +69,13 @@ script:
   - yarn run clean
   - yarn run vscode:prepublish
   - yarn run cover:enable
-  - if [ $DEBUGGER_TEST == "true" ]; then
+  - if [ $MULTIROOT_WORKSPACE_TEST == "true" ]; then
         yarn run testMultiWorkspace --silent;
     fi
   - if [ $MULTIROOT_WORKSPACE_TEST == "true" ]; then
         bash <(curl -s https://codecov.io/bash);
     fi
-  - if [ "$TRAVIS_PYTHON_VERSION" != "2.7" ]; then
+  - if [ "$TRAVIS_UPLOAD_COVERAGE" != "2.7" ]; then
         python3 -m pip install --upgrade -r news/requirements.txt;
         python3 news/announce.py --dry-run;
     fi
