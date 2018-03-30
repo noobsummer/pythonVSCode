@@ -440,7 +440,7 @@ function getAddedFilesSync() {
     return out
         .split(/\r?\n/)
         .filter(l => !!l)
-        .filter(l => _.intersection(['A', '?'], l.substring(0, 2).trim().split()).length > 0)
+        .filter(l => _.intersection(['A', '?', 'U'], l.substring(0, 2).trim().split('')).length > 0)
         .map(l => path.join(__dirname, l.substring(2).trim()));
 }
 function getModifiedFilesSync() {
@@ -448,7 +448,7 @@ function getModifiedFilesSync() {
     return out
         .split(/\r?\n/)
         .filter(l => !!l)
-        .filter(l => _.intersection(['M', 'A', 'R', 'C'], l.substring(0, 2).trim().split()).length > 0)
+        .filter(l => _.intersection(['M', 'A', 'R', 'C', 'U', '?'], l.substring(0, 2).trim().split('')).length > 0)
         .map(l => path.join(__dirname, l.substring(2).trim()));
 }
 
