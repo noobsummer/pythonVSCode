@@ -3,8 +3,7 @@
 
 // tslint:disable:no-suspicious-comment max-func-body-length no-invalid-this no-var-requires no-require-imports no-any
 
-import { expect, use } from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
+import { expect } from 'chai';
 import * as path from 'path';
 import { ThreadEvent } from 'vscode-debugadapter';
 import { DebugClient } from 'vscode-debugadapter-testsupport';
@@ -21,8 +20,6 @@ import { DEBUGGER_TIMEOUT } from './common/constants';
 import { DebugClientEx } from './debugClient';
 
 const isProcessRunning = require('is-running') as (number) => boolean;
-
-use(chaiAsPromised);
 
 const debugFilesPath = path.join(__dirname, '..', '..', '..', 'src', 'test', 'pythonFiles', 'debugging');
 
@@ -446,7 +443,11 @@ let testCounter = 0;
             await debugClient.assertStoppedLocation('exception', pauseLocation);
         });
         test('Test multi-threaded debugging', async function () {
-            this.timeout(30000);
+            if (debuggerType !== 'python') {
+                // See GitHub issue #1250
+                this.skip();
+                return;
+            }
             await Promise.all([
                 debugClient.configurationSequence(),
                 debugClient.launch(buildLauncArgs('multiThread.py', false)),
@@ -464,6 +465,49 @@ let testCounter = 0;
             });
 
             await debugClient.assertStoppedLocation('breakpoint', breakpointLocation);
+            const threads = await debugClient.threadsRequest();
+            expect(threads.body.threads).of.lengthOf(2, 'incorrect number of threads');
+            for (const thread of threads.body.threads) {
+                expect(thread.id).to.be.lessThan(MAX_SIGNED_INT32 + 1, 'ThreadId is not an integer');
+            }
+        });
+        test('Test multi-threaded debugging', async function () {
+            this.timeout(30000);
+            await Promise.all([
+                debugClient.launch(buildLauncArgs('multiThread.py', false)),
+                debugClient.waitForEvent('initialized')
+            ]);
+
+            const pythonFile = path.join(debugFilesPath, 'multiThread.py');
+            const breakpointLocation = { path: pythonFile, column: 1, line: 11 };
+            const breakpointRequestArgs = {
+                lines: [breakpointLocation.line],
+                breakpoints: [{ line: breakpointLocation.line, column: breakpointLocation.column }],
+                source: { path: breakpointLocation.path }
+            };
+
+            function waitForStoppedEventFromTwoThreads() {
+                return new Promise((resolve, reject) => {
+                    let numberOfStops = 0;
+                    debugClient.addListener('stopped', (event: DebugProtocol.StoppedEvent) => {
+                        numberOfStops += 1;
+                        if (numberOfStops < 2) {
+                            return;
+                        }
+                        resolve(event);
+                    });
+                    setTimeout(() => reject(new Error('Timeout waiting for two threads to stop at breakpoint')), DEBUGGER_TIMEOUT);
+                });
+            }
+
+            await Promise.all([
+                debugClient.setBreakpointsRequest(breakpointRequestArgs),
+                debugClient.setExceptionBreakpointsRequest({ filters: [] }),
+                debugClient.configurationDoneRequest(),
+                waitForStoppedEventFromTwoThreads(),
+                debugClient.assertStoppedLocation('breakpoint', breakpointLocation)
+            ]);
+
             const threads = await debugClient.threadsRequest();
             expect(threads.body.threads).of.lengthOf(2, 'incorrect number of threads');
             for (const thread of threads.body.threads) {
