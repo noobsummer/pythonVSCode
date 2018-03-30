@@ -459,6 +459,7 @@ let testCounter = 0;
                 console.log(`stepx ${stopWatch.elapsedTime}, ${JSON.stringify(output)}`);
             });
             console.log(`step2 ${stopWatch.elapsedTime}`);
+            await sleep(3000);
             const pythonFile = path.join(debugFilesPath, 'multiThread.py');
             const breakpointLocation = { path: pythonFile, column: 1, line: 15 };
             await debugClient.setBreakpointsRequest({
