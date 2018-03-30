@@ -14,6 +14,7 @@ import { noop } from '../../client/common/core.utils';
 import { IS_WINDOWS } from '../../client/common/platform/constants';
 import { FileSystem } from '../../client/common/platform/fileSystem';
 import { PlatformService } from '../../client/common/platform/platformService';
+import { StopWatch } from '../../client/common/stopWatch';
 import { DebugOptions, LaunchRequestArguments } from '../../client/debugger/Common/Contracts';
 import { sleep } from '../common';
 import { IS_MULTI_ROOT_TEST, TEST_DEBUGGER } from '../initialize';
@@ -447,16 +448,17 @@ let testCounter = 0;
             await debugClient.assertStoppedLocation('exception', pauseLocation);
         });
         test('Test multi-threaded debugging', async () => {
-            console.log('step1');
+            const stopWatch = new StopWatch();
+            console.log(`step1 ${stopWatch.elapsedTime}`);
             await Promise.all([
                 debugClient.configurationSequence(),
                 debugClient.launch(buildLauncArgs('multiThread.py', false)),
                 debugClient.waitForEvent('initialized')
             ]);
             debugClient.addListener('output', output => {
-                console.log(JSON.stringify(output));
+                console.log(`stepx ${stopWatch.elapsedTime}, ${JSON.stringify(output)}`);
             });
-            console.log('step2');
+            console.log(`step2 ${stopWatch.elapsedTime}`);
             const pythonFile = path.join(debugFilesPath, 'multiThread.py');
             const breakpointLocation = { path: pythonFile, column: 1, line: 15 };
             await debugClient.setBreakpointsRequest({
@@ -464,17 +466,17 @@ let testCounter = 0;
                 breakpoints: [{ line: breakpointLocation.line, column: breakpointLocation.column }],
                 source: { path: breakpointLocation.path }
             });
-            console.log('step3');
+            console.log(`step3 ${stopWatch.elapsedTime}`);
             // hit breakpoint.
             await debugClient.assertStoppedLocation('breakpoint', breakpointLocation);
-            console.log('step4');
+            console.log(`step4 ${stopWatch.elapsedTime}`);
             const threads = await debugClient.threadsRequest();
-            console.log('step5');
+            console.log(`step5 ${stopWatch.elapsedTime}`);
             expect(threads.body.threads).of.lengthOf(2, 'incorrect number of threads');
             for (const thread of threads.body.threads) {
                 expect(thread.id).to.be.lessThan(MAX_SIGNED_INT32 + 1, 'ThreadId is not an integer');
             }
-            console.log('step6');
+            console.log(`step6 ${stopWatch.elapsedTime}`);
         });
         test('Test stack frames', async () => {
             await Promise.all([
