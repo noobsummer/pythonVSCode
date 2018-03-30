@@ -452,6 +452,9 @@ let testCounter = 0;
                 debugClient.launch(buildLauncArgs('multiThread.py', false)),
                 debugClient.waitForEvent('initialized')
             ]);
+            debugClient.addListener('output', output => {
+                console.log(JSON.stringify(output));
+            });
             console.log('step2');
             const pythonFile = path.join(debugFilesPath, 'multiThread.py');
             const breakpointLocation = { path: pythonFile, column: 1, line: 11 };
