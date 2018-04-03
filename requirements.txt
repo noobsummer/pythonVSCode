@@ -10,3 +10,4 @@ pytest
 fabric
 numba
 rope
+flask
