@@ -5,24 +5,21 @@
 
 // tslint:disable:no-invalid-this max-func-body-length no-empty no-increment-decrement
 
-import { expect } from 'chai';
 import { ChildProcess, spawn } from 'child_process';
 import * as getFreePort from 'get-port';
 import * as path from 'path';
 import { DebugClient } from 'vscode-debugadapter-testsupport';
 import { EXTENSION_ROOT_DIR } from '../../client/common/constants';
 import '../../client/common/extensions';
-import { IS_WINDOWS } from '../../client/common/platform/constants';
+import { DebugOptions } from '../../client/debugger/Common/Contracts';
 import { sleep } from '../common';
 import { initialize, IS_APPVEYOR, IS_MULTI_ROOT_TEST, TEST_DEBUGGER } from '../initialize';
-import { DEBUGGER_TIMEOUT } from './common/constants';
-import { DebugClientEx } from './debugClient';
+import { continueDebugging, createDebugAdapter } from './utils';
 
 const fileToDebug = path.join(EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'remoteDebugger-start-with-ptvsd.py');
 const ptvsdPath = path.join(EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'ptvsd');
-const DEBUG_ADAPTER = path.join(EXTENSION_ROOT_DIR, 'out', 'client', 'debugger', 'mainV2.js');
 
-suite('Attach Debugger -Experimental', () => {
+suite('Attach Debugger - Experimental', () => {
     let debugClient: DebugClient;
     let procToKill: ChildProcess;
     suiteSetup(initialize);
@@ -31,10 +28,8 @@ suite('Attach Debugger -Experimental', () => {
         if (!IS_MULTI_ROOT_TEST || !TEST_DEBUGGER) {
             this.skip();
         }
-        await sleep(1000);
-        debugClient = createDebugAdapter();
-        debugClient.defaultTimeout = DEBUGGER_TIMEOUT;
-        await debugClient.start();
+        const coverageDirectory = path.join(EXTENSION_ROOT_DIR, 'debug_coverage_attach_ptvsd');
+        debugClient = await createDebugAdapter(coverageDirectory);
     });
     teardown(async () => {
         // Wait for a second before starting another test (sometimes, sockets take a while to get closed).
@@ -48,19 +43,6 @@ suite('Attach Debugger -Experimental', () => {
             } catch { }
         }
     });
-    /**
-     * Creates the debug aimport { AttachRequestArguments } from '../../client/debugger/Common/Contracts';
-     * We do not need to support code coverage on AppVeyor, lets use the standard test adapter.
-     * @returns {DebugClient}
-     */
-    function createDebugAdapter(): DebugClient {
-        if (IS_WINDOWS) {
-            return new DebugClient('node', DEBUG_ADAPTER, 'pythonExperimental');
-        } else {
-            const coverageDirectory = path.join(EXTENSION_ROOT_DIR, 'debug_coverage_attach_ptvsd');
-            return new DebugClientEx(DEBUG_ADAPTER, 'pythonExperimental', coverageDirectory, { cwd: EXTENSION_ROOT_DIR });
-        }
-    }
     test('Confirm we are able to attach to a running program', async function () {
         this.timeout(20000);
         // Lets skip this test on AppVeyor (very flaky on AppVeyor).
@@ -93,8 +75,8 @@ suite('Attach Debugger -Experimental', () => {
             type: 'pythonExperimental',
             port: port,
             host: 'localhost',
-            logToFile: true,
-            debugOptions: ['RedirectOutput']
+            logToFile: false,
+            debugOptions: [DebugOptions.RedirectOutput]
         });
 
         await Promise.all([
@@ -123,12 +105,8 @@ suite('Attach Debugger -Experimental', () => {
 
         await debugClient.assertStoppedLocation('breakpoint', breakpointLocation);
 
-        const threads = await debugClient.threadsRequest();
-        expect(threads).to.be.not.equal(undefined, 'no threads response');
-        expect(threads.body.threads).to.be.lengthOf(1);
-
         await Promise.all([
-            debugClient.continueRequest({ threadId: threads.body.threads[0].id }),
+            continueDebugging(debugClient),
             debugClient.assertOutput('stdout', 'this is print'),
             debugClient.waitForEvent('exited'),
             debugClient.waitForEvent('terminated')
