@@ -23,7 +23,8 @@ const ptvsdPath = path.join(EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', '
 const DEBUG_ADAPTER = path.join(EXTENSION_ROOT_DIR, 'out', 'client', 'debugger', 'mainV2.js');
 
 suite('Attach Debugger - detach and again again - Experimental', () => {
-    let debugClient: DebugClient;
+    let debugClient1: DebugClient;
+    let debugClient2: DebugClient;
     let procToKill: ChildProcess;
     suiteSetup(initialize);
 
@@ -31,13 +32,19 @@ suite('Attach Debugger - detach and again again - Experimental', () => {
         if (!IS_MULTI_ROOT_TEST || !TEST_DEBUGGER) {
             this.skip();
         }
-        await startDebugger();
     });
     teardown(async () => {
         // Wait for a second before starting another test (sometimes, sockets take a while to get closed).
         await sleep(1000);
         try {
-            await debugClient.stop().catch(() => { });
+            if (debugClient1) {
+                await debugClient2.stop().catch(() => { });
+            }
+        } catch (ex) { }
+        try {
+            if (debugClient2) {
+                await debugClient2.stop().catch(() => { });
+            }
         } catch (ex) { }
         if (procToKill) {
             try {
@@ -47,9 +54,10 @@ suite('Attach Debugger - detach and again again - Experimental', () => {
     });
     async function startDebugger() {
         await sleep(1000);
-        debugClient = createDebugAdapter();
+        const debugClient = createDebugAdapter();
         debugClient.defaultTimeout = DEBUGGER_TIMEOUT;
         await debugClient.start();
+        return debugClient;
     }
     /**
      * Creates the debug aimport { AttachRequestArguments } from '../../client/debugger/Common/Contracts';
@@ -71,6 +79,8 @@ suite('Attach Debugger - detach and again again - Experimental', () => {
         // Set the path for PTVSD to be picked up.
         // tslint:disable-next-line:no-string-literal
         customEnv['PYTHONPATH'] = ptvsdPath;
+        // tslint:disable-next-line:no-string-literal
+        customEnv['PYTHONPATH'] = '/Users/donjayamanne/Desktop/Development/vscode/ptvsd';
         const pythonArgs = ['-m', 'ptvsd', '--server', '--port', `${port}`, '--file', fileToDebug.fileToCommandArgument()];
         procToKill = spawn('python', pythonArgs, { env: customEnv, cwd: path.dirname(fileToDebug) });
         // wait for socket server to start.
@@ -78,7 +88,7 @@ suite('Attach Debugger - detach and again again - Experimental', () => {
         return port;
     }
 
-    async function waitForDebuggerCondfigurationDone(port: number) {
+    async function waitForDebuggerCondfigurationDone(debugClient: DebugClient, port: number) {
         // Send initialize, attach
         const initializePromise = debugClient.initializeRequest({
             adapterID: 'pythonExperimental',
@@ -107,8 +117,8 @@ suite('Attach Debugger - detach and again again - Experimental', () => {
 
         await debugClient.configurationDoneRequest();
     }
-    async function testAttaching(port: number) {
-        await waitForDebuggerCondfigurationDone(port);
+    async function testAttaching(debugClient: DebugClient, port: number) {
+        await waitForDebuggerCondfigurationDone(debugClient, port);
         let threads = await debugClient.threadsRequest();
         expect(threads).to.be.not.equal(undefined, 'no threads response');
         expect(threads.body.threads).to.be.lengthOf(1);
@@ -138,14 +148,53 @@ suite('Attach Debugger - detach and again again - Experimental', () => {
             return;
         }
 
+        let debugClient = debugClient1 = await startDebugger();
+
         const port = await startRemoteProcess();
-        await testAttaching(port);
+        await testAttaching(debugClient, port);
         await debugClient.disconnectRequest({});
-        await startDebugger();
-        await testAttaching(port);
+        debugClient = await startDebugger();
+        await testAttaching(debugClient, port);
 
         const terminatedPromise = debugClient.waitForEvent('terminated');
         procToKill.kill();
         await terminatedPromise;
+    });
+
+    test('Confirm we are unable to attach if already attached to a running program', async function () {
+        this.timeout(200000);
+        // Lets skip this test on AppVeyor (very flaky on AppVeyor).
+        if (IS_APPVEYOR) {
+            return;
+        }
+
+        debugClient1 = await startDebugger();
+
+        const port = await startRemoteProcess();
+        await testAttaching(debugClient1, port);
+
+        debugClient2 = await startDebugger();
+        // Send initialize, attach
+        const initializePromise = debugClient2.initializeRequest({
+            adapterID: 'pythonExperimental',
+            linesStartAt1: true,
+            columnsStartAt1: true,
+            supportsRunInTerminalRequest: true,
+            pathFormat: 'path',
+            supportsVariableType: true,
+            supportsVariablePaging: true
+        });
+        const attachPromise = debugClient2.attachRequest({
+            localRoot: path.dirname(fileToDebug),
+            remoteRoot: path.dirname(fileToDebug),
+            type: 'pythonExperimental',
+            port: port,
+            host: 'localhost',
+            logToFile: true,
+            debugOptions: ['RedirectOutput']
+        });
+        // tslint:disable-next-line:no-unused-variable
+        const [_, attachResponse] = await Promise.all([initializePromise, attachPromise]);
+        expect(attachResponse.success).to.be.equal(false, 'Attach should have failed');
     });
 });
