@@ -20,7 +20,7 @@ import { PythonV2DebugConfigurationProvider } from '../../client/debugger';
 import { AttachRequestArguments, DebugOptions } from '../../client/debugger/Common/Contracts';
 import { IServiceContainer } from '../../client/ioc/types';
 import { sleep } from '../common';
-import { initialize, IS_APPVEYOR, IS_MULTI_ROOT_TEST, TEST_DEBUGGER } from '../initialize';
+import { initialize, IS_MULTI_ROOT_TEST, TEST_DEBUGGER } from '../initialize';
 import { continueDebugging, createDebugAdapter } from './utils';
 
 const fileToDebug = path.join(EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'remoteDebugger-start-with-ptvsd.py');
@@ -127,20 +127,10 @@ suite('Attach Debugger - Experimental', () => {
     }
     test('Confirm we are able to attach to a running program', async function () {
         this.timeout(20000);
-        // Lets skip this test on AppVeyor (very flaky on AppVeyor).
-        if (IS_APPVEYOR) {
-            return;
-        }
-
         await testAttachingToRemoteProcess(path.dirname(fileToDebug), path.dirname(fileToDebug), path.sep);
     });
     test('Confirm local and remote paths are translated', async function () {
         this.timeout(20000);
-        // Lets skip this test on AppVeyor (very flaky on AppVeyor).
-        if (IS_APPVEYOR) {
-            return;
-        }
-
         // If tests are running on windows, then treat debug client as a unix client and remote process as current OS.
         const localWorkspace = IS_WINDOWS ? '/home/user/Desktop/project/src' : 'C:\\Project\\src';
         const pathSeparator = IS_WINDOWS ? '/' : '\\';
