@@ -8,6 +8,8 @@
 import { ChildProcess, spawn } from 'child_process';
 import * as getFreePort from 'get-port';
 import * as path from 'path';
+import * as TypeMoq from 'typemoq';
+import { DebugConfiguration, Uri } from 'vscode';
 import { DebugClient } from 'vscode-debugadapter-testsupport';
 import { EXTENSION_ROOT_DIR } from '../../client/common/constants';
 import '../../client/common/extensions';
@@ -43,13 +45,7 @@ suite('Attach Debugger - Experimental', () => {
             } catch { }
         }
     });
-    test('Confirm we are able to attach to a running program', async function () {
-        this.timeout(20000);
-        // Lets skip this test on AppVeyor (very flaky on AppVeyor).
-        if (IS_APPVEYOR) {
-            return;
-        }
-
+    async function testAttachingToRemoteProcess(localRoot: string, remoteRoot: string, pathSeparator: string) {
         const port = await getFreePort({ host: 'localhost', port: 3000 });
         const customEnv = { ...process.env };
 
@@ -58,6 +54,8 @@ suite('Attach Debugger - Experimental', () => {
         customEnv['PYTHONPATH'] = PTVSD_PATH;
         const pythonArgs = ['-m', 'ptvsd', '--server', '--port', `${port}`, '--file', fileToDebug.fileToCommandArgument()];
         procToKill = spawn('python', pythonArgs, { env: customEnv, cwd: path.dirname(fileToDebug) });
+        // wait for remote socket to start
+        await sleep(1000);
 
         // Send initialize, attach
         const initializePromise = debugClient.initializeRequest({
@@ -69,15 +67,23 @@ suite('Attach Debugger - Experimental', () => {
             supportsVariableType: true,
             supportsVariablePaging: true
         });
-        const attachPromise = debugClient.attachRequest({
-            localRoot: path.dirname(fileToDebug),
-            remoteRoot: path.dirname(fileToDebug),
+        const options: AttachRequestArguments & DebugConfiguration = {
+            name: 'attach',
+            request: 'attach',
+            localRoot,
+            remoteRoot,
             type: 'pythonExperimental',
             port: port,
             host: 'localhost',
-            logToFile: false,
+            logToFile: true,
             debugOptions: [DebugOptions.RedirectOutput]
-        });
+        };
+        const serviceContainer = TypeMoq.Mock.ofType<IServiceContainer>();
+        serviceContainer.setup(c => c.get(IPlatformService, TypeMoq.It.isAny())).returns(() => new PlatformService());
+        const configProvider = new PythonV2DebugConfigurationProvider(serviceContainer.object);
+
+        const launchArgs = await configProvider.resolveDebugConfiguration({ index: 0, name: 'root', uri: Uri.file(localRoot) }, options);
+        const attachPromise = debugClient.attachRequest(launchArgs);
 
         await Promise.all([
             initializePromise,
@@ -90,7 +96,9 @@ suite('Attach Debugger - Experimental', () => {
         const stdOutPromise = debugClient.assertOutput('stdout', 'this is stdout');
         const stdErrPromise = debugClient.assertOutput('stderr', 'this is stderr');
 
-        const breakpointLocation = { path: fileToDebug, column: 1, line: 12 };
+        // Don't use path utils, as we're building the paths manually (mimic windows paths on unix test servers and vice versa).
+        const localFileName = `${localRoot}${pathSeparator}${path.basename(fileToDebug)}`;
+        const breakpointLocation = { path: localFileName, column: 1, line: 12 };
         const breakpointPromise = debugClient.setBreakpointsRequest({
             lines: [breakpointLocation.line],
             breakpoints: [{ line: breakpointLocation.line, column: breakpointLocation.column }],
@@ -111,5 +119,25 @@ suite('Attach Debugger - Experimental', () => {
             debugClient.waitForEvent('exited'),
             debugClient.waitForEvent('terminated')
         ]);
+    }
+    test('Confirm we are able to attach to a running program', async function () {
+        this.timeout(20000);
+        // Lets skip this test on AppVeyor (very flaky on AppVeyor).
+        if (IS_APPVEYOR) {
+            return;
+        }
+
+        await testAttachingToRemoteProcess(path.dirname(fileToDebug), path.dirname(fileToDebug), path.sep);
+    });
+    test('Confirm localpath translations are done correctly', async function () {
+        this.timeout(20000);
+        // Lets skip this test on AppVeyor (very flaky on AppVeyor).
+        if (IS_APPVEYOR) {
+            return;
+        }
+
+        const localWorkspace = IS_WINDOWS ? '/home/user/Desktop/project/src' : 'C:\\Project\\src';
+        const pathSeparator = IS_WINDOWS ? '\\' : '/';
+        await testAttachingToRemoteProcess(localWorkspace, path.dirname(fileToDebug), pathSeparator);
     });
 });
