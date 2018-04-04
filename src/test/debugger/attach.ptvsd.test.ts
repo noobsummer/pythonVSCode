@@ -56,7 +56,7 @@ suite('Attach Debugger - Experimental', () => {
 
         // Set the path for PTVSD to be picked up.
         // tslint:disable-next-line:no-string-literal
-        customEnv['PYTHONPATH'] = '/home/don/Desktop/development/vscode/ptvsd';
+        customEnv['PYTHONPATH'] = ptvsdPath;
         const pythonArgs = ['-m', 'ptvsd', '--server', '--port', `${port}`, '--file', fileToDebug];
         procToKill = spawn('python', pythonArgs, { env: customEnv, cwd: path.dirname(fileToDebug) });
         // wait for remote socket to start
@@ -116,9 +116,7 @@ suite('Attach Debugger - Experimental', () => {
             stdOutPromise, stdErrPromise
         ]);
 
-        // Unfortunately PTVSD will be running on the current OS, hence paths will be concatenated using current OS path separator.
-        const expectedBreapointFile = path.join(localRoot, path.basename(fileToDebug));
-        await debugClient.assertStoppedLocation('breakpoint', { path: expectedBreapointFile, column: 1, line: 12 });
+        await debugClient.assertStoppedLocation('breakpoint', breakpointLocation);
 
         await Promise.all([
             continueDebugging(debugClient),
@@ -136,7 +134,7 @@ suite('Attach Debugger - Experimental', () => {
 
         await testAttachingToRemoteProcess(path.dirname(fileToDebug), path.dirname(fileToDebug), path.sep);
     });
-    test('Confirm localpath translations are done correctly', async function () {
+    test('Confirm local and remote paths are translated', async function () {
         this.timeout(20000);
         this.retries(0);
         // Lets skip this test on AppVeyor (very flaky on AppVeyor).
@@ -145,7 +143,7 @@ suite('Attach Debugger - Experimental', () => {
         }
 
         const localWorkspace = IS_WINDOWS ? '/home/user/Desktop/project/src' : 'C:\\Project\\src';
-        const pathSeparator = IS_WINDOWS ? '\\' : '/';
+        const pathSeparator = IS_WINDOWS ? '/' : '\\';
         await testAttachingToRemoteProcess(localWorkspace, path.dirname(fileToDebug), pathSeparator);
     });
 });
