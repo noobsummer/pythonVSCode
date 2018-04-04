@@ -116,7 +116,9 @@ suite('Attach Debugger - Experimental', () => {
             stdOutPromise, stdErrPromise
         ]);
 
-        await debugClient.assertStoppedLocation('breakpoint', breakpointLocation);
+        // Unfortunately PTVSD will be running on the current OS, hence paths will be concatenated using current OS path separator.
+        const expectedBreapointFile = path.join(localRoot, path.basename(fileToDebug));
+        await debugClient.assertStoppedLocation('breakpoint', { path: expectedBreapointFile, column: 1, line: 12 });
 
         await Promise.all([
             continueDebugging(debugClient),
@@ -136,6 +138,7 @@ suite('Attach Debugger - Experimental', () => {
     });
     test('Confirm localpath translations are done correctly', async function () {
         this.timeout(20000);
+        this.retries(0);
         // Lets skip this test on AppVeyor (very flaky on AppVeyor).
         if (IS_APPVEYOR) {
             return;
