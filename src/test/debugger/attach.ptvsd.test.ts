@@ -80,15 +80,15 @@ suite('Attach Debugger - Experimental', () => {
             type: 'pythonExperimental',
             port: port,
             host: 'localhost',
-            logToFile: true,
+            logToFile: false,
             debugOptions: [DebugOptions.RedirectOutput]
         };
         const serviceContainer = TypeMoq.Mock.ofType<IServiceContainer>();
         serviceContainer.setup(c => c.get(IPlatformService, TypeMoq.It.isAny())).returns(() => new PlatformService());
         const configProvider = new PythonV2DebugConfigurationProvider(serviceContainer.object);
 
-        const launchArgs = await configProvider.resolveDebugConfiguration({ index: 0, name: 'root', uri: Uri.file(localRoot) }, options);
-        const attachPromise = debugClient.attachRequest(launchArgs);
+        await configProvider.resolveDebugConfiguration({ index: 0, name: 'root', uri: Uri.file(localRoot) }, options);
+        const attachPromise = debugClient.attachRequest(options);
 
         await Promise.all([
             initializePromise,
@@ -136,12 +136,12 @@ suite('Attach Debugger - Experimental', () => {
     });
     test('Confirm local and remote paths are translated', async function () {
         this.timeout(20000);
-        this.retries(0);
         // Lets skip this test on AppVeyor (very flaky on AppVeyor).
         if (IS_APPVEYOR) {
             return;
         }
 
+        // If tests are running on windows, then treat debug client as a unix client and remote process as current OS.
         const localWorkspace = IS_WINDOWS ? '/home/user/Desktop/project/src' : 'C:\\Project\\src';
         const pathSeparator = IS_WINDOWS ? '/' : '\\';
         await testAttachingToRemoteProcess(localWorkspace, path.dirname(fileToDebug), pathSeparator);
