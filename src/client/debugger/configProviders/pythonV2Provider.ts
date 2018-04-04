@@ -39,5 +39,13 @@ export class PythonV2DebugConfigurationProvider extends BaseConfigurationProvide
         if (this.serviceContainer.get<IPlatformService>(IPlatformService).isWindows) {
             debugConfiguration.debugOptions.push(DebugOptions.FixFilePathCase);
         }
+
+        if (!debugConfiguration.pathMappings) {
+            debugConfiguration.pathMappings = [];
+        }
+        debugConfiguration.pathMappings!.push({
+            localRoot: debugConfiguration.localRoot,
+            remoteRoot: debugConfiguration.remoteRoot
+        });
     }
 }
