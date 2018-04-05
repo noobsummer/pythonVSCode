@@ -92,7 +92,7 @@ script:
         python3 news/announce.py --dry-run;
     fi
 after_success:
-  - if [ $AZURE_STORAGE_ACCOUNT and DEBUGGER_RELEASE_TEST == "true" ]; then
+  - if [ $AZURE_STORAGE_ACCOUNT and $DEBUGGER_RELEASE_TEST == "true" ]; then
         yarn run clean;
         vsce package;
         azure storage blob upload --container $AZURE_STORAGE_CONTAINER --blob ms-python-insiders.vsix --account-name $AZURE_STORAGE_ACCOUNT --account-key $AZURE_STORAGE_ACCESS_KEY --file python*.vsix --quiet;

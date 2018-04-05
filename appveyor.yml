@@ -69,8 +69,7 @@ test_script:
   - yarn run clean
   - yarn run vscode:prepublish
   - if [%DEBUGGER_TEST%]==[true] (
-      pip install -t ./pythonFiles/experimental/ptvsd git+https://github.com/Microsoft/ptvsd/;
-      yarn run testDebugger --silent)
+      pip install -t ./pythonFiles/experimental/ptvsd git+https://github.com/Microsoft/ptvsd/ && yarn run testDebugger --silent)
   - yarn run ptvsd:clean
   - pip install -t ./pythonFiles/experimental/ptvsd --pre
   - if [%DEBUGGER_RELEASE_TEST%]==[true] (
