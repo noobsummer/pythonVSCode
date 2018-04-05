@@ -93,6 +93,8 @@ gulp.task('clean', ['output:clean', 'cover:clean'], () => { });
 
 gulp.task('output:clean', () => del(['coverage', 'debug_coverage*']));
 
+gulp.task('ptvsd:clean', () => del(['pythonFiles/experimental/ptvsd*', '!pythonFiles/experimental/ptvsd*.py']));
+
 gulp.task('cover:clean', () => del(['coverage', 'debug_coverage*']));
 
 gulp.task('cover:enable', () => {

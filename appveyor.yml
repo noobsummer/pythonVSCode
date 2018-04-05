@@ -14,6 +14,12 @@ environment:
       PYTHON_ARCH: "32"
       nodejs_version: "8.9.1"
       APPVEYOR: "true"
+      DEBUGGER_RELEASE_TEST: "true"
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6.3"
+      PYTHON_ARCH: "32"
+      nodejs_version: "8.9.1"
+      APPVEYOR: "true"
       SINGLE_WORKSPACE_TEST: "true"
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6.3"
@@ -27,7 +33,14 @@ environment:
       nodejs_version: "8.9.1"
       APPVEYOR: "true"
       ANALYSIS_TEST: "true"
-
+matrix:
+  allow_failures:
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6.3"
+      PYTHON_ARCH: "32"
+      nodejs_version: "8.9.1"
+      APPVEYOR: "true"
+      DEBUGGER_TEST: "true"
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
 
@@ -37,7 +50,6 @@ install:
   - yarn
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - python -m pip install -U pip
-  - pip install -t ./pythonFiles/experimental/ptvsd git+https://github.com/Microsoft/ptvsd/
   - python --version
   - python -m easy_install -U setuptools
   - "%PYTHON%/Scripts/pip.exe install --upgrade -r requirements.txt"
@@ -57,6 +69,11 @@ test_script:
   - yarn run clean
   - yarn run vscode:prepublish
   - if [%DEBUGGER_TEST%]==[true] (
+      pip install -t ./pythonFiles/experimental/ptvsd git+https://github.com/Microsoft/ptvsd/;
+      yarn run testDebugger --silent)
+  - yarn run ptvsd:clean
+  - pip install -t ./pythonFiles/experimental/ptvsd --pre
+  - if [%DEBUGGER_RELEASE_TEST%]==[true] (
       yarn run testDebugger --silent)
   - if [%SINGLE_WORKSPACE_TEST%]==[true] (
       yarn run testSingleWorkspace --silent)

@@ -1807,6 +1807,7 @@
         "lint-staged": "node gulpfile.js",
         "lint": "tslint src/**/*.ts -t verbose",
         "clean": "gulp clean",
+        "ptvsd:clean": "gulp ptvsd:clean",
         "cover:enable": "gulp cover:enable",
         "debugger-coverage": "gulp debugger-coverage"
     },
