@@ -46,7 +46,7 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
     function buildLaunchArgs(workspaceDirectory: string): LaunchRequestArguments {
         const env = {};
         // tslint:disable-next-line:no-string-literal
-        env['PYTHONPATH'] = '/home/don/Desktop/development/vscode/ptvsd';
+        env['PYTHONPATH'] = path.join(EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'ptvsd');
 
         // tslint:disable-next-line:no-unnecessary-local-variable
         const options: LaunchRequestArguments = {
