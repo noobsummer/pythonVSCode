@@ -58,7 +58,6 @@ suite('Attach Debugger - Experimental', () => {
         // Set the path for PTVSD to be picked up.
         // tslint:disable-next-line:no-string-literal
         env['PYTHONPATH'] = PTVSD_PATH;
-        env.PYTHONPATH = 'C:\\Development\\VSCode\\ptvsd';
         const pythonArgs = ['-m', 'ptvsd', '--server', '--port', `${port}`, '--file', fileToDebug.fileToCommandArgument()];
         proc = spawn('python', pythonArgs, { env: env, cwd: path.dirname(fileToDebug) });
         await sleep(3000);
