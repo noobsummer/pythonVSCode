@@ -6,7 +6,6 @@
 // tslint:disable:no-suspicious-comment max-func-body-length no-invalid-this no-var-requires no-require-imports no-any no-http-string no-string-literal
 
 import { expect } from 'chai';
-import * as fs from 'fs';
 import * as getFreePort from 'get-port';
 import * as path from 'path';
 import { DebugClient } from 'vscode-debugadapter-testsupport';
@@ -22,20 +21,15 @@ let testCounter = 0;
 const debuggerType = 'pythonExperimental';
 suite(`Django and Flask Debugging: ${debuggerType}`, () => {
     let debugClient: DebugClient;
-    let success = false;
     setup(async function () {
         if (!IS_MULTI_ROOT_TEST || !TEST_DEBUGGER) {
             this.skip();
         }
-        success = false;
         this.timeout(5 * DEBUGGER_TIMEOUT);
         const coverageDirectory = path.join(EXTENSION_ROOT_DIR, `debug_coverage_django_flask${testCounter += 1}`);
         debugClient = await createDebugAdapter(coverageDirectory);
     });
     teardown(async () => {
-        if (!success) {
-            console.log(fs.readFileSync(path.join(EXTENSION_ROOT_DIR, 'experimental_debug.log')).toString());
-        }
         // Wait for a second before starting another test (sometimes, sockets take a while to get closed).
         await sleep(1000);
         try {
@@ -141,7 +135,6 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
         await testTemplateDebugging(options, port,
             path.join(workspaceDirectory, 'run.py'), 7,
             path.join(workspaceDirectory, 'templates', 'index.html'), 6);
-        success = true;
     });
 
     test('Test Django Route and Template debugging', async () => {
@@ -151,6 +144,5 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
         await testTemplateDebugging(options, port,
             path.join(workspaceDirectory, 'home', 'views.py'), 10,
             path.join(workspaceDirectory, 'home', 'templates', 'index.html'), 6);
-        success = true;
     });
 });
