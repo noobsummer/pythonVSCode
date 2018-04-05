@@ -13,7 +13,7 @@ process.env.IS_MULTI_ROOT_TEST = IS_MULTI_ROOT_TEST.toString();
 // If running on CI server and we're running the debugger tests, then ensure we only run debug tests.
 // We do this to ensure we only run debugger test, as debugger tests are very flaky on CI.
 // So the solution is to run them separately and first on CI.
-const grep = IS_CI_SERVER && IS_CI_SERVER_TEST_DEBUGGER ? 'Debug' : undefined;
+const grep = IS_CI_SERVER && IS_CI_SERVER_TEST_DEBUGGER ? 'Debug' : 'Django and Flask Debugging';
 
 // You can directly control Mocha options by uncommenting the following lines.
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info.
@@ -23,7 +23,7 @@ const options: MochaSetupOptions & { retries: number } = {
     useColors: true,
     timeout: 25000,
     retries: 3,
-    grep
+    grep: 'Django and Flask Debugging'
 };
 testRunner.configure(options, { coverageConfig: '../coverconfig.json' });
 module.exports = testRunner;
