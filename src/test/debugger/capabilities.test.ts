@@ -33,7 +33,7 @@ class Request extends Message implements DebugProtocol.InitializeRequest {
 
 const fileToDebug = path.join(EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'remoteDebugger-start-with-ptvsd.py');
 
-suite('Attach Debugger - Experimental', () => {
+suite('Debugging - Capabilities', () => {
     let disposables: { dispose?: Function; destroy?: Function }[];
     let proc: ChildProcess;
     setup(async function () {
