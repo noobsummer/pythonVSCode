@@ -22,17 +22,24 @@ const fileEncodingUsed = path.join(autoCompPath, 'five.py');
 const fileSuppress = path.join(autoCompPath, 'suppress.py');
 
 // tslint:disable-next-line:max-func-body-length
-suite('Autocomplete', () => {
+suite('Autocomplete', function () {
+    // tslint:disable-next-line:no-invalid-this
+    this.timeout(60000);
     let isPython2: boolean;
     let ioc: UnitTestIocContainer;
-
+    console.log('1');
     suiteSetup(async function () {
+        console.log('2');
         // Attempt to fix #1301
         // tslint:disable-next-line:no-invalid-this
         this.timeout(60000);
+        console.log('3');
         await initialize();
+        console.log('4');
         initializeDI();
+        console.log('5');
         isPython2 = await ioc.getPythonMajorVersion(rootWorkspaceUri) === 2;
+        console.log('6');
     });
     setup(initializeTest);
     suiteTeardown(closeActiveWindows);

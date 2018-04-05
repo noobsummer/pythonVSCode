@@ -28,19 +28,28 @@ export async function initializePython() {
 
 // tslint:disable-next-line:no-any
 export async function initialize(): Promise<any> {
+    console.log('1a');
     await initializePython();
+    console.log('1b');
     // Opening a python file activates the extension.
     await vscode.workspace.openTextDocument(dummyPythonFile);
+    console.log('1c');
     await activated;
+    console.log('1d');
     // Dispose any cached python settings (used only in test env).
     PythonSettings.dispose();
+    console.log('1e');
 }
 // tslint:disable-next-line:no-any
 export async function initializeTest(): Promise<any> {
+    console.log('2a');
     await initializePython();
+    console.log('2b');
     await closeActiveWindows();
+    console.log('2c');
     // Dispose any cached python settings (used only in test env).
     PythonSettings.dispose();
+    console.log('2d');
 }
 export async function closeActiveWindows(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
