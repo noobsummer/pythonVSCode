@@ -6,6 +6,7 @@
 // tslint:disable:no-suspicious-comment max-func-body-length no-invalid-this no-var-requires no-require-imports no-any no-http-string no-string-literal
 
 import { expect } from 'chai';
+import * as fs from 'fs';
 import * as getFreePort from 'get-port';
 import * as path from 'path';
 import { DebugClient } from 'vscode-debugadapter-testsupport';
@@ -29,7 +30,10 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
         const coverageDirectory = path.join(EXTENSION_ROOT_DIR, `debug_coverage_django_flask${testCounter += 1}`);
         debugClient = await createDebugAdapter(coverageDirectory);
     });
-    teardown(async () => {
+    teardown(async function () {
+        if (this.currentTest.state !== 'passed'){
+            console.log(fs.readFileSync(path.join(EXTENSION_ROOT_DIR, 'experimental_debug.log')).toString());
+        }
         // Wait for a second before starting another test (sometimes, sockets take a while to get closed).
         await sleep(1000);
         try {
