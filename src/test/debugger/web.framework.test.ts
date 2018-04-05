@@ -31,7 +31,8 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
         debugClient = await createDebugAdapter(coverageDirectory);
     });
     teardown(async function () {
-        if (this.currentTest.state !== 'passed'){
+        if (this.currentTest.state !== 'passed') {
+            console.log(this.currentTest.title);
             console.log(fs.readFileSync(path.join(EXTENSION_ROOT_DIR, 'experimental_debug.log')).toString());
         }
         // Wait for a second before starting another test (sometimes, sockets take a while to get closed).
@@ -45,13 +46,13 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
     function buildLaunchArgs(workspaceDirectory: string): LaunchRequestArguments {
         const env = {};
         // tslint:disable-next-line:no-string-literal
-        env['PYTHONPATH'] = `.${path.delimiter}${path.join(EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'ptvsd')}`;
+        env['PYTHONPATH'] = path.join(EXTENSION_ROOT_DIR, 'pythonFiles', 'experimental', 'ptvsd');
 
         // tslint:disable-next-line:no-unnecessary-local-variable
         const options: LaunchRequestArguments = {
             cwd: workspaceDirectory,
             program: '',
-            debugOptions: [DebugOptions.RedirectOutput],
+            debugOptions: [DebugOptions.RedirectOutruetput],
             pythonPath: 'python',
             args: [],
             env,
