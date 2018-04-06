@@ -5,7 +5,6 @@ import { CancellationTokenSource, TextDocument, workspace } from 'vscode';
 import { IS_WINDOWS, PythonSettings } from '../../client/common/configSettings';
 import { ShebangCodeLensProvider } from '../../client/interpreter/display/shebangCodeLensProvider';
 import { getFirstNonEmptyLineFromMultilineString } from '../../client/interpreter/helpers';
-import { PYTHON_PATH } from '../common';
 import { closeActiveWindows, initialize, initializeTest } from '../initialize';
 import { UnitTestIocContainer } from '../unittests/serviceRegistry';
 
@@ -48,7 +47,7 @@ suite('Shebang detection', () => {
 
     test('Code lens will not appear when sheban python and python in settings are the same', async () => {
         PythonSettings.dispose();
-        const pythonPath = await getFullyQualifiedPathToInterpreter(PYTHON_PATH);
+        const pythonPath = await getFullyQualifiedPathToInterpreter('python');
         const document = await openFile(fileShebang);
         PythonSettings.getInstance(document.uri).pythonPath = pythonPath!;
         const codeLenses = await setupCodeLens(document);
@@ -76,7 +75,7 @@ suite('Shebang detection', () => {
         });
 
         test('Code lens will not appear even when shebang python uses env and python settings are the same', async () => {
-            const pythonPath = await getFullyQualifiedPathToInterpreter(PYTHON_PATH);
+            const pythonPath = await getFullyQualifiedPathToInterpreter('python');
             const document = await openFile(fileShebangEnv);
             PythonSettings.getInstance(document.uri).pythonPath = pythonPath!;
             const codeLenses = await setupCodeLens(document);
