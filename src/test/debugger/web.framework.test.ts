@@ -14,7 +14,7 @@ import { DebugClient } from 'vscode-debugadapter-testsupport';
 import { EXTENSION_ROOT_DIR } from '../../client/common/constants';
 import { noop } from '../../client/common/core.utils';
 import { DebugOptions, LaunchRequestArguments } from '../../client/debugger/Common/Contracts';
-import { sleep } from '../common';
+import { PYTHON_PATH, sleep } from '../common';
 import { IS_MULTI_ROOT_TEST, TEST_DEBUGGER } from '../initialize';
 import { DEBUGGER_TIMEOUT } from './common/constants';
 import { continueDebugging, createDebugAdapter, ExpectedVariable, hitHttpBreakpoint, makeHttpRequest, validateVariablesInFrame } from './utils';
@@ -54,7 +54,7 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
             cwd: workspaceDirectory,
             program: '',
             debugOptions: [DebugOptions.RedirectOutput],
-            pythonPath: 'python',
+            pythonPath: PYTHON_PATH,
             args: [],
             env,
             envFile: '',
@@ -139,7 +139,7 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
         const { options, port } = await buildFlaskLaunchArgs(workspaceDirectory);
         const env = { ...process.env, ...options.env };
         console.log('step1');
-        const proc = spawn('python', ['-m', 'flask', ...options.args], { cwd: workspaceDirectory, env });
+        const proc = spawn(PYTHON_PATH, ['-m', 'flask', ...options.args], { cwd: workspaceDirectory, env });
         console.log('step2');
         proc.stdout.on('data', data => {
             console.log(data.toString());
