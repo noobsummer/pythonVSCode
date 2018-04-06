@@ -32,7 +32,7 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
         debugClient = await createDebugAdapter(coverageDirectory);
     });
     teardown(async function () {
-        if (this.currentTest.state !== 'passed') {
+        if (this.currentTest.state !== 'passed' && fs.existsSync(path.join(EXTENSION_ROOT_DIR, 'experimental_debug.log'))) {
             console.log(this.currentTest.title);
             console.log(fs.readFileSync(path.join(EXTENSION_ROOT_DIR, 'experimental_debug.log')).toString());
         }
