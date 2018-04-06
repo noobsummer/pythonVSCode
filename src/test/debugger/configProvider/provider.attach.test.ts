@@ -36,6 +36,9 @@ enum OS {
             if (os.value === OS.Windows && provider.debugType === 'pythonExperimental') {
                 debugOptionsAvailable.push(DebugOptions.FixFilePathCase);
             }
+            if (os.value !== OS.Windows && provider.debugType === 'pythonExperimental') {
+                debugOptionsAvailable.push(DebugOptions.FilePathIsCaseSensitive);
+            }
             setup(() => {
                 serviceContainer = TypeMoq.Mock.ofType<IServiceContainer>();
                 platformService = TypeMoq.Mock.ofType<IPlatformService>();
