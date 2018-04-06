@@ -3,9 +3,10 @@
 
 'use strict';
 
-// tslint:disable:no-suspicious-comment max-func-body-length no-invalid-this no-var-requires no-require-imports no-any no-http-string no-string-literal
+// tslint:disable:no-suspicious-comment max-func-body-length no-invalid-this no-var-requires no-require-imports no-any no-http-string no-string-literal no-console
 
 import { expect } from 'chai';
+import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as getFreePort from 'get-port';
 import * as path from 'path';
@@ -133,6 +134,37 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
         expect(htmlResult).to.contain('Hello this_is_another_value_from_server');
     }
 
+    test('Dummy test', async () => {
+        const workspaceDirectory = path.join(EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'flaskApp');
+        const { options, port } = await buildFlaskLaunchArgs(workspaceDirectory);
+        const env = { ...process.env, ...options.env };
+        console.log('step1');
+        const proc = spawn('python', ['-m', 'flask', ...options.args], { cwd: workspaceDirectory, env });
+        console.log('step2');
+        proc.stdout.on('data', data => {
+            console.log(data.toString());
+        });
+        proc.stderr.on('data', data => {
+            console.error(data.toString());
+        });
+        proc.on('error', error => {
+            console.error(error);
+        });
+        proc.on('close', () => {
+            console.error('closed');
+        });
+        proc.on('exit', () => {
+            console.error('exit');
+        });
+        console.log('step3');
+        await sleep(3000);
+        console.log('step4');
+        const httpResult = await makeHttpRequest(`http://localhost:${port}`);
+        console.log('step5');
+        console.log(httpResult);
+        console.log('step6');
+    });
+
     test('Test Flask Route and Template debugging', async () => {
         const workspaceDirectory = path.join(EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'flaskApp');
         const { options, port } = await buildFlaskLaunchArgs(workspaceDirectory);
@@ -142,12 +174,12 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
             path.join(workspaceDirectory, 'templates', 'index.html'), 6);
     });
 
-    test('Test Django Route and Template debugging', async () => {
-        const workspaceDirectory = path.join(EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'djangoApp');
-        const { options, port } = await buildDjangoLaunchArgs(workspaceDirectory);
+    // test('Test Django Route and Template debugging', async () => {
+    //     const workspaceDirectory = path.join(EXTENSION_ROOT_DIR, 'src', 'testMultiRootWkspc', 'workspace5', 'djangoApp');
+    //     const { options, port } = await buildDjangoLaunchArgs(workspaceDirectory);
 
-        await testTemplateDebugging(options, port,
-            path.join(workspaceDirectory, 'home', 'views.py'), 10,
-            path.join(workspaceDirectory, 'home', 'templates', 'index.html'), 6);
-    });
+    //     await testTemplateDebugging(options, port,
+    //         path.join(workspaceDirectory, 'home', 'views.py'), 10,
+    //         path.join(workspaceDirectory, 'home', 'templates', 'index.html'), 6);
+    // });
 });
