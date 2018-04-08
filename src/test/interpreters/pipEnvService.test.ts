@@ -12,7 +12,7 @@ import { Uri, WorkspaceFolder } from 'vscode';
 import { IApplicationShell, IWorkspaceService } from '../../client/common/application/types';
 import { EnumEx } from '../../client/common/enumUtils';
 import { IFileSystem } from '../../client/common/platform/types';
-import { IProcessService } from '../../client/common/process/types';
+import { IProcessService, IProcessServiceFactory } from '../../client/common/process/types';
 import { ICurrentProcess, IPersistentState, IPersistentStateFactory } from '../../client/common/types';
 import { IEnvironmentVariablesProvider } from '../../client/common/variables/types';
 import { IInterpreterLocatorService, IInterpreterVersionService } from '../../client/interpreter/contracts';
@@ -38,6 +38,7 @@ suite('Interpreters - PipEnv', () => {
             let appShell: TypeMoq.IMock<IApplicationShell>;
             let persistentStateFactory: TypeMoq.IMock<IPersistentStateFactory>;
             let envVarsProvider: TypeMoq.IMock<IEnvironmentVariablesProvider>;
+            let procServiceFactory: TypeMoq.IMock<IProcessServiceFactory>;
             setup(() => {
                 serviceContainer = TypeMoq.Mock.ofType<IServiceContainer>();
                 const workspaceService = TypeMoq.Mock.ofType<IWorkspaceService>();
@@ -48,6 +49,8 @@ suite('Interpreters - PipEnv', () => {
                 currentProcess = TypeMoq.Mock.ofType<ICurrentProcess>();
                 persistentStateFactory = TypeMoq.Mock.ofType<IPersistentStateFactory>();
                 envVarsProvider = TypeMoq.Mock.ofType<IEnvironmentVariablesProvider>();
+                procServiceFactory = TypeMoq.Mock.ofType<IProcessServiceFactory>();
+                procServiceFactory.setup(p => p.create(TypeMoq.It.isAny())).returns(() => Promise.resolve(processService.object));
 
                 // tslint:disable-next-line:no-any
                 const persistentState = TypeMoq.Mock.ofType<IPersistentState<any>>();
@@ -61,9 +64,9 @@ suite('Interpreters - PipEnv', () => {
                 workspaceService.setup(w => w.getWorkspaceFolder(TypeMoq.It.isAny())).returns(() => workspaceFolder.object);
                 workspaceService.setup(w => w.rootPath).returns(() => rootWorkspace);
 
+                serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IProcessServiceFactory), TypeMoq.It.isAny())).returns(() => procServiceFactory.object);
                 serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IWorkspaceService))).returns(() => workspaceService.object);
                 serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IInterpreterVersionService))).returns(() => interpreterVersionService.object);
-                serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IProcessService))).returns(() => processService.object);
                 serviceContainer.setup(c => c.get(TypeMoq.It.isValue(ICurrentProcess))).returns(() => currentProcess.object);
                 serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IFileSystem))).returns(() => fileSystem.object);
                 serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IApplicationShell))).returns(() => appShell.object);
