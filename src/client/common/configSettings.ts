@@ -32,12 +32,12 @@ export class PythonSettings extends EventEmitter implements IPythonSettings {
     public venvPath = '';
     public venvFolders: string[] = [];
     public devOptions: string[] = [];
-    public linting?: ILintingSettings;
+    public linting!: ILintingSettings;
     public formatting!: IFormattingSettings;
-    public autoComplete?: IAutoCompleteSettings;
+    public autoComplete!: IAutoCompeteSettings;
     public unitTest!: IUnitTestSettings;
     public terminal!: ITerminalSettings;
-    public sortImports?: ISortImportSettings;
+    public sortImports!: ISortImportSettings;
     public workspaceSymbols!: IWorkspaceSymbolSettings;
     public disableInstallationChecks = false;
     public globalModuleInstallation = false;
