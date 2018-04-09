@@ -40,7 +40,7 @@ export enum DebugOptions {
     Sudo = 'Sudo',
     Pyramid = 'Pyramid',
     FixFilePathCase = 'FixFilePathCase',
-    FilePathIsCaseSensitive = 'FilePathIsCaseSensitive'
+    WindowsClient = 'WindowsClient'
 }
 
 export interface ExceptionHandling {
