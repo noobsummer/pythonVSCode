@@ -2,9 +2,9 @@ import { inject, injectable } from 'inversify';
 import * as _ from 'lodash';
 import * as path from 'path';
 import { Uri } from 'vscode';
-import { PythonSettings } from '../../../common/configSettings';
 import { IFileSystem } from '../../../common/platform/types';
 import { IProcessService } from '../../../common/process/types';
+import { IConfigurationService } from '../../../common/types';
 import { IServiceContainer } from '../../../ioc/types';
 import { IInterpreterVersionService, InterpreterType, PythonInterpreter } from '../../contracts';
 import { IVirtualEnvironmentManager } from '../../virtualEnvs/types';
@@ -26,7 +26,8 @@ export class CurrentPathService extends CacheableLocatorService {
         return this.suggestionsFromKnownPaths();
     }
     private async suggestionsFromKnownPaths(resource?: Uri) {
-        const currentPythonInterpreter = this.getInterpreter(PythonSettings.getInstance(resource).pythonPath, '').then(interpreter => [interpreter]);
+        const configSettings = this.serviceContainer.get<IConfigurationService>(IConfigurationService).getSettings(resource);
+        const currentPythonInterpreter = this.getInterpreter(configSettings.pythonPath, '').then(interpreter => [interpreter]);
         const python = this.getInterpreter('python', '').then(interpreter => [interpreter]);
         const python2 = this.getInterpreter('python2', '').then(interpreter => [interpreter]);
         const python3 = this.getInterpreter('python3', '').then(interpreter => [interpreter]);
