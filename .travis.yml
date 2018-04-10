@@ -3,24 +3,24 @@ cache: pip
 
 matrix:
     include:
-        - os: linux
-          python: "2.7"
-          env: DEBUGGER_TEST=true
+        # - os: linux
+        #   python: "2.7"
+        #   env: DEBUGGER_TEST=true
         - os: linux
           python: "2.7"
           env: SINGLE_WORKSPACE_TEST=true
         - os: linux
           python: "2.7"
           env: MULTIROOT_WORKSPACE_TEST=true
-        - os: linux
-          python: "3.6-dev"
-          env: DEBUGGER_TEST=true
-        - os: linux
-          python: "3.6-dev"
-          env: SINGLE_WORKSPACE_TEST=true
-        - os: linux
-          python: "3.6-dev"
-          env: MULTIROOT_WORKSPACE_TEST=true
+        # - os: linux
+        #   python: "3.6-dev"
+        #   env: DEBUGGER_TEST=true
+        # - os: linux
+        #   python: "3.6-dev"
+        #   env: SINGLE_WORKSPACE_TEST=true
+        # - os: linux
+        #   python: "3.6-dev"
+        #   env: MULTIROOT_WORKSPACE_TEST=true
 before_install: |
   if [ $TRAVIS_OS_NAME == "linux" ]; then
     export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
@@ -34,6 +34,7 @@ before_install: |
   nvm use 8.9.1
   yarn global add vsce
   yarn global add azure-cli
+  which python
   export TRAVIS_PYTHON_PATH=`which python`
 install:
   - python -m pip install --upgrade -r requirements.txt
@@ -79,9 +80,9 @@ script:
         python3 -m pip install --upgrade -r news/requirements.txt;
         python3 news/announce.py --dry-run;
     fi
-after_success:
-  - if [ $AZURE_STORAGE_ACCOUNT ]; then
-        yarn run clean;
-        vsce package;
-        azure storage blob upload --container $AZURE_STORAGE_CONTAINER --blob ms-python-insiders.vsix --account-name $AZURE_STORAGE_ACCOUNT --account-key $AZURE_STORAGE_ACCESS_KEY --file python*.vsix --quiet;
-    fi
+# after_success:
+#   - if [ $AZURE_STORAGE_ACCOUNT ]; then
+#         yarn run clean;
+#         vsce package;
+#         azure storage blob upload --container $AZURE_STORAGE_CONTAINER --blob ms-python-insiders.vsix --account-name $AZURE_STORAGE_ACCOUNT --account-key $AZURE_STORAGE_ACCESS_KEY --file python*.vsix --quiet;
+#     fi

@@ -93,7 +93,7 @@ const filteredPep88MessagesToBeReturned: ILintMessage[] = [
 ];
 
 // tslint:disable-next-line:max-func-body-length
-suite('Linting', () => {
+suite('Lintingx', () => {
     let ioc: UnitTestIocContainer;
     let linterManager: ILinterManager;
     let configService: IConfigurationService;
@@ -165,111 +165,111 @@ suite('Linting', () => {
         }
     }
 
-    test('Disable Pylint and test linter', async () => {
-        await testEnablingDisablingOfLinter(Product.pylint, false);
-    });
-    test('Enable Pylint and test linter', async () => {
-        await testEnablingDisablingOfLinter(Product.pylint, true);
-    });
-    test('Disable Pep8 and test linter', async () => {
-        await testEnablingDisablingOfLinter(Product.pep8, false);
-    });
-    test('Enable Pep8 and test linter', async () => {
-        await testEnablingDisablingOfLinter(Product.pep8, true);
-    });
-    test('Disable Flake8 and test linter', async () => {
-        await testEnablingDisablingOfLinter(Product.flake8, false);
-    });
+    // test('Disable Pylint and test linter', async () => {
+    //     await testEnablingDisablingOfLinter(Product.pylint, false);
+    // });
+    // test('Enable Pylint and test linter', async () => {
+    //     await testEnablingDisablingOfLinter(Product.pylint, true);
+    // });
+    // test('Disable Pep8 and test linter', async () => {
+    //     await testEnablingDisablingOfLinter(Product.pep8, false);
+    // });testEnablingDisablingOfLinter
+    // test('Enable Pep8 and test linter', async () => {
+    //     await testEnablingDisablingOfLinter(Product.pep8, true);
+    // });
+    // test('Disable Flake8 and test linter', async () => {
+    //     await testEnablingDisablingOfLinter(Product.flake8, false);
+    // });
     test('Enable Flake8 and test linter', async () => {
         await testEnablingDisablingOfLinter(Product.flake8, true);
     });
-    test('Disable Prospector and test linter', async () => {
-        await testEnablingDisablingOfLinter(Product.prospector, false);
-    });
-    test('Enable Prospector and test linter', async () => {
-        await testEnablingDisablingOfLinter(Product.prospector, true);
-    });
-    test('Disable Pydocstyle and test linter', async () => {
-        await testEnablingDisablingOfLinter(Product.pydocstyle, false);
-    });
-    test('Enable Pydocstyle and test linter', async () => {
-        await testEnablingDisablingOfLinter(Product.pydocstyle, true);
-    });
+    // test('Disable Prospector and test linter', async () => {
+    //     await testEnablingDisablingOfLinter(Product.prospector, false);
+    // });
+    // test('Enable Prospector and test linter', async () => {
+    //     await testEnablingDisablingOfLinter(Product.prospector, true);
+    // });
+    // test('Disable Pydocstyle and test linter', async () => {
+    //     await testEnablingDisablingOfLinter(Product.pydocstyle, false);
+    // });
+    // test('Enable Pydocstyle and test linter', async () => {
+    //     await testEnablingDisablingOfLinter(Product.pydocstyle, true);
+    // });
 
-    // tslint:disable-next-line:no-any
-    async function testLinterMessages(product: Product, pythonFile: string, messagesToBeReceived: ILintMessage[]): Promise<any> {
-        const outputChannel = ioc.serviceContainer.get<MockOutputChannel>(IOutputChannel, STANDARD_OUTPUT_CHANNEL);
-        const cancelToken = new vscode.CancellationTokenSource();
-        const document = await vscode.workspace.openTextDocument(pythonFile);
+    // // tslint:disable-next-line:no-any
+    // async function testLinterMessages(product: Product, pythonFile: string, messagesToBeReceived: ILintMessage[]): Promise<any> {
+    //     const outputChannel = ioc.serviceContainer.get<MockOutputChannel>(IOutputChannel, STANDARD_OUTPUT_CHANNEL);
+    //     const cancelToken = new vscode.CancellationTokenSource();
+    //     const document = await vscode.workspace.openTextDocument(pythonFile);
 
-        await linterManager.setActiveLintersAsync([product], document.uri);
-        const linter = linterManager.createLinter(product, outputChannel, ioc.serviceContainer);
+    //     await linterManager.setActiveLintersAsync([product], document.uri);
+    //     const linter = linterManager.createLinter(product, outputChannel, ioc.serviceContainer);
 
-        const messages = await linter.lint(document, cancelToken.token);
-        if (messagesToBeReceived.length === 0) {
-            assert.equal(messages.length, 0, `No errors in linter, Output - ${outputChannel.output}`);
-        } else {
-            if (outputChannel.output.indexOf('ENOENT') === -1) {
-                // Pylint for Python Version 2.7 could return 80 linter messages, where as in 3.5 it might only return 1.
-                // Looks like pylint stops linting as soon as it comes across any ERRORS.
-                assert.notEqual(messages.length, 0, `No errors in linter, Output - ${outputChannel.output}`);
-            }
-        }
-    }
-    test('PyLint', async () => {
-        await testLinterMessages(Product.pylint, fileToLint, pylintMessagesToBeReturned);
-    });
-    test('Flake8', async () => {
-        await testLinterMessages(Product.flake8, fileToLint, flake8MessagesToBeReturned);
-    });
-    test('Pep8', async () => {
-        await testLinterMessages(Product.pep8, fileToLint, pep8MessagesToBeReturned);
-    });
-    test('Pydocstyle', async () => {
-        await testLinterMessages(Product.pydocstyle, fileToLint, pydocstyleMessagseToBeReturned);
-    });
-    test('PyLint with config in root', async () => {
-        await fs.copy(path.join(pylintConfigPath, '.pylintrc'), path.join(workspaceUri.fsPath, '.pylintrc'));
-        await testLinterMessages(Product.pylint, path.join(pylintConfigPath, 'file2.py'), []);
-    });
-    test('Flake8 with config in root', async () => {
-        await testLinterMessages(Product.flake8, path.join(flake8ConfigPath, 'file.py'), filteredFlake8MessagesToBeReturned);
-    });
-    test('Pep8 with config in root', async () => {
-        await testLinterMessages(Product.pep8, path.join(pep8ConfigPath, 'file.py'), filteredPep88MessagesToBeReturned);
-    });
-    test('Pydocstyle with config in root', async () => {
-        await configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
-        await fs.copy(path.join(pydocstyleConfigPath27, '.pydocstyle'), path.join(workspaceUri.fsPath, '.pydocstyle'));
-        await testLinterMessages(Product.pydocstyle, path.join(pydocstyleConfigPath27, 'file.py'), []);
-    });
-    test('PyLint minimal checkers', async () => {
-        const file = path.join(pythoFilesPath, 'minCheck.py');
-        await configService.updateSettingAsync('linting.pylintUseMinimalCheckers', true, workspaceUri);
-        await testEnablingDisablingOfLinter(Product.pylint, false, file);
-        await configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
-        await testEnablingDisablingOfLinter(Product.pylint, true, file);
-    });
-    // tslint:disable-next-line:no-function-expression
-    test('Multiple linters', async function () {
-        // tslint:disable-next-line:no-invalid-this
-        this.timeout(40000);
+    //     const messages = await linter.lint(document, cancelToken.token);
+    //     if (messagesToBeReceived.length === 0) {
+    //         assert.equal(messages.length, 0, `No errors in linter, Output - ${outputChannel.output}`);
+    //     } else {
+    //         if (outputChannel.output.indexOf('ENOENT') === -1) {
+    //             // Pylint for Python Version 2.7 could return 80 linter messages, where as in 3.5 it might only return 1.
+    //             // Looks like pylint stops linting as soon as it comes across any ERRORS.
+    //             assert.notEqual(messages.length, 0, `No errors in linter, Output - ${outputChannel.output}`);
+    //         }
+    //     }
+    // }
+    // test('PyLint', async () => {
+    //     await testLinterMessages(Product.pylint, fileToLint, pylintMessagesToBeReturned);
+    // });
+    // test('Flake8', async () => {
+    //     await testLinterMessages(Product.flake8, fileToLint, flake8MessagesToBeReturned);
+    // });
+    // test('Pep8', async () => {
+    //     await testLinterMessages(Product.pep8, fileToLint, pep8MessagesToBeReturned);
+    // });
+    // test('Pydocstyle', async () => {
+    //     await testLinterMessages(Product.pydocstyle, fileToLint, pydocstyleMessagseToBeReturned);
+    // });
+    // test('PyLint with config in root', async () => {
+    //     await fs.copy(path.join(pylintConfigPath, '.pylintrc'), path.join(workspaceUri.fsPath, '.pylintrc'));
+    //     await testLinterMessages(Product.pylint, path.join(pylintConfigPath, 'file2.py'), []);
+    // });
+    // test('Flake8 with config in root', async () => {
+    //     await testLinterMessages(Product.flake8, path.join(flake8ConfigPath, 'file.py'), filteredFlake8MessagesToBeReturned);
+    // });
+    // test('Pep8 with config in root', async () => {
+    //     await testLinterMessages(Product.pep8, path.join(pep8ConfigPath, 'file.py'), filteredPep88MessagesToBeReturned);
+    // });
+    // test('Pydocstyle with config in root', async () => {
+    //     await configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
+    //     await fs.copy(path.join(pydocstyleConfigPath27, '.pydocstyle'), path.join(workspaceUri.fsPath, '.pydocstyle'));
+    //     await testLinterMessages(Product.pydocstyle, path.join(pydocstyleConfigPath27, 'file.py'), []);
+    // });
+    // test('PyLint minimal checkers', async () => {
+    //     const file = path.join(pythoFilesPath, 'minCheck.py');
+    //     await configService.updateSettingAsync('linting.pylintUseMinimalCheckers', true, workspaceUri);
+    //     await testEnablingDisablingOfLinter(Product.pylint, false, file);
+    //     await configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
+    //     await testEnablingDisablingOfLinter(Product.pylint, true, file);
+    // });
+    // // tslint:disable-next-line:no-function-expression
+    // test('Multiple linters', async function () {
+    //     // tslint:disable-next-line:no-invalid-this
+    //     this.timeout(40000);
 
-        await closeActiveWindows();
-        const document = await vscode.workspace.openTextDocument(path.join(pythoFilesPath, 'print.py'));
-        await vscode.window.showTextDocument(document);
-        await configService.updateSettingAsync('linting.enabled', true, workspaceUri);
-        await configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
-        await configService.updateSettingAsync('linting.pylintEnabled', true, workspaceUri);
-        await configService.updateSettingAsync('linting.flake8Enabled', true, workspaceUri);
+    //     await closeActiveWindows();
+    //     const document = await vscode.workspace.openTextDocument(path.join(pythoFilesPath, 'print.py'));
+    //     await vscode.window.showTextDocument(document);
+    //     await configService.updateSettingAsync('linting.enabled', true, workspaceUri);
+    //     await configService.updateSettingAsync('linting.pylintUseMinimalCheckers', false, workspaceUri);
+    //     await configService.updateSettingAsync('linting.pylintEnabled', true, workspaceUri);
+    //     await configService.updateSettingAsync('linting.flake8Enabled', true, workspaceUri);
 
-        const commands = ioc.serviceContainer.get<ICommandManager>(ICommandManager);
-        const collection = await commands.executeCommand('python.runLinting') as vscode.DiagnosticCollection;
-        assert.notEqual(collection, undefined, 'python.runLinting did not return valid diagnostics collection.');
+    //     const commands = ioc.serviceContainer.get<ICommandManager>(ICommandManager);
+    //     const collection = await commands.executeCommand('python.runLinting') as vscode.DiagnosticCollection;
+    //     assert.notEqual(collection, undefined, 'python.runLinting did not return valid diagnostics collection.');
 
-        const messages = collection!.get(document.uri);
-        assert.notEqual(messages!.length, 0, 'No diagnostic messages.');
-        assert.notEqual(messages!.filter(x => x.source === 'pylint').length, 0, 'No pylint messages.');
-        assert.notEqual(messages!.filter(x => x.source === 'flake8').length, 0, 'No flake8 messages.');
-    });
+    //     const messages = collection!.get(document.uri);
+    //     assert.notEqual(messages!.length, 0, 'No diagnostic messages.');
+    //     assert.notEqual(messages!.filter(x => x.source === 'pylint').length, 0, 'No pylint messages.');
+    //     assert.notEqual(messages!.filter(x => x.source === 'flake8').length, 0, 'No flake8 messages.');
+    // });
 });
