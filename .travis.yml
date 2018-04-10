@@ -29,14 +29,14 @@ before_install: |
     sh -e /etc/init.d/xvfb start;
     sleep 3;
   fi
-  git submodule update --init --recursive
-  git clone https://github.com/creationix/nvm.git ./.nvm
-  source ./.nvm/nvm.sh
-  nvm install 8.9.1
-  nvm use 8.9.1
-  yarn global add vsce
-  yarn global add azure-cli
-  export TRAVIS_PYTHON_PATH=`which python`
+  # git submodule update --init --recursive
+  # git clone https://github.com/creationix/nvm.git ./.nvm
+  # source ./.nvm/nvm.sh
+  # nvm install 8.9.1
+  # nvm use 8.9.1
+  # yarn global add vsce
+  # yarn global add azure-cli
+  # export TRAVIS_PYTHON_PATH=`which python`
 install:
   # Update docker-engine using Ubuntu 'trusty' apt repo
   # - curl -sSL "https://get.docker.com/gpg" | sudo -E apt-key add -
