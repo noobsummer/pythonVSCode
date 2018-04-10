@@ -1,5 +1,5 @@
-# Install flake8 first, as both flake8 and autopep8 require pycodestyle
-# However flake8 doesn't always work with the latest version of pycodestyle
+# Install flake8 first, as both flake8 and autopep8 require pycodestyle,
+# but flake8 has a tighter pinning.
 flake8
 autopep8
 yapf
