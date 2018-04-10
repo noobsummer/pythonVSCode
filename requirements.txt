@@ -1,11 +1,11 @@
-# Use v2.3.1 of pycodestyle, as >= 2.4.0 will break flake8
-pycodestyle==2.3.1
+# Install flake8 first, as both flake8 and autopep8 require pycodestyle
+# However flake8 doesn't always work with the latest version of pycodestyle
+flake8
 autopep8
 yapf
 pylint
 pep8
 prospector
-flake8
 pydocstyle
 nose
 pytest
