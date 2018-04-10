@@ -1,3 +1,2 @@
 # Ignore docker files
-Dockerfile
 .dockerignore
