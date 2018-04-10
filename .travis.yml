@@ -59,7 +59,7 @@ before_script:
   - docker run -d -p 5000:5000 vsc
 
 script:
-  - ./test.sh
+  - source ./test.sh
   # - yarn run clean
   # - yarn run vscode:prepublish
   # - yarn run cover:enable
