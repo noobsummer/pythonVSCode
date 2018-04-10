@@ -39,8 +39,8 @@ before_install: |
   export TRAVIS_PYTHON_PATH=`which python`
 install:
   # Update docker-engine using Ubuntu 'trusty' apt repo
-  - curl -sSL "https://get.docker.com/gpg" | sudo -E apt-key add -
-  - echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | sudo tee -a /etc/apt/sources.list
+  # - curl -sSL "https://get.docker.com/gpg" | sudo -E apt-key add -
+  # - echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get update
   # - sudo apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --assume-yes install docker-engine
   - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-engine
@@ -48,9 +48,9 @@ install:
   # Update docker-compose via pip
   - sudo pip install docker-compose
   - docker-compose version
-  - python -m pip install --upgrade -r requirements.txt
-  - python -m pip install -t ./pythonFiles/experimental/ptvsd git+https://github.com/Microsoft/ptvsd/
-  - yarn
+  # - python -m pip install --upgrade -r requirements.txt
+  # - python -m pip install -t ./pythonFiles/experimental/ptvsd git+https://github.com/Microsoft/ptvsd/
+  # - yarn
 
 before_script:
   - docker-compose up --build -d
