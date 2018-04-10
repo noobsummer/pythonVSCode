@@ -68,6 +68,8 @@ export class PythonExecutionService implements IPythonExecutionService {
         if (this.envVars) {
             opts.env = this.envVars;
         }
+        console.log(this.pythonPath);
+        console.log(moduleName);
         const result = await this.procService.exec(this.pythonPath, ['-m', moduleName, ...args], opts);
 
         // If a module is not installed we'll have something in stderr.

@@ -125,7 +125,9 @@ function getPythonPath(): string {
     // tslint:disable-next-line:no-unsafe-any
     if (process.env.TRAVIS_PYTHON_PATH && fs.existsSync(process.env.TRAVIS_PYTHON_PATH)) {
         // tslint:disable-next-line:no-unsafe-any
+        console.log(process.env.TRAVIS_PYTHON_PATH);
         return process.env.TRAVIS_PYTHON_PATH;
     }
-    return 'python';
+    console.log('python');
+    return 'python2';
 }

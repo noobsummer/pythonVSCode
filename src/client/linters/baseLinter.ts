@@ -109,6 +109,7 @@ export abstract class BaseLinter implements ILinter {
         const cwd = this.getWorkspaceRootPath(document);
         const pythonToolsExecutionService = this.serviceContainer.get<IPythonToolExecutionService>(IPythonToolExecutionService);
         try {
+            console.log(JSON.stringify(executionInfo));
             const result = await pythonToolsExecutionService.exec(executionInfo, { cwd, token: cancellation, mergeStdOutErr: true }, document.uri);
             this.displayLinterResultHeader(result.stdout);
             return await this.parseMessages(result.stdout, document, cancellation, regEx);
