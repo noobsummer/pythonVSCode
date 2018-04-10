@@ -39,6 +39,9 @@ before_install: |
 install:
   - python -m pip install --upgrade -r requirements.txt
   - python -m pip install -t ./pythonFiles/experimental/ptvsd git+https://github.com/Microsoft/ptvsd/
+  - python -m pycodestyle --version
+  - python -m flake8 --version
+  - pip list
   - yarn
 
 script:
