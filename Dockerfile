@@ -1,5 +1,5 @@
 FROM debian
-ADD . /usr/share/test-server
-WORKDIR /usr/share/test-server
 RUN apt-get update && apt-get install --assume-yes netcat-openbsd
-CMD ./server.sh
+WORKDIR /usr/share/test-server
+ADD server.sh /usr/share/test-server
+CMD ["bash", "./server.sh"]
