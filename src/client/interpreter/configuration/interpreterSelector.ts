@@ -78,7 +78,7 @@ export class InterpreterSelector implements IInterpreterSelector {
         const result: PythonInterpreter[] = [];
         interpreters.forEach(x => {
             if (result.findIndex(a => a.displayName === x.displayName
-                && a.type === x.type && this.fileSystem.arePathsSame(a.path, x.path)) < 0) {
+                && a.type === x.type && this.fileSystem.arePathsSame(path.dirname(a.path), path.dirname(x.path))) < 0) {
                 result.push(x);
             }
         });
