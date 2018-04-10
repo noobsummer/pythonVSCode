@@ -47,7 +47,7 @@ install:
   - sudo apt-get install --force-yes -y docker-ce
   - docker version
   # Update docker-compose via pip
-  - sudo pip install docker-compose
+  - sudo python -m pip install docker-compose
   - docker-compose version
   # - python -m pip install --upgrade -r requirements.txt
   # - python -m pip install -t ./pythonFiles/experimental/ptvsd git+https://github.com/Microsoft/ptvsd/
