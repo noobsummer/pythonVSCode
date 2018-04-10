@@ -102,9 +102,14 @@ export class LocalDebugClient extends DebugClient<LaunchRequestArguments> {
                 pythonPath = this.args.pythonPath;
             }
             const ptVSToolsFilePath = this.launcherScriptProvider.getLauncherFilePath();
-            const launcherArgs = this.buildLauncherArguments();
 
-            const args = [ptVSToolsFilePath, processCwd, dbgServer.port.toString(), '34806ad9-833a-4524-8cd6-18ca4aa74f14'].concat(launcherArgs);
+            let args = [];
+            if (ptVSToolsFilePath) {
+                const launcherArgs = this.buildDebugOptions(ptVSToolsFilePath, processCwd, dbgServer.port);
+                args = this.buildDebugOptions().concat(this.buildPythonArgs());
+            } else {
+                const args = ptVSToolsFilePath ? [ptVSToolsFilePath, processCwd, dbgServer.port.toString(), '34806ad9-833a-4524-8cd6-18ca4aa74f14'].concat(launcherArgs) : launcherArgs;
+            }
             switch (this.args.console) {
                 case 'externalTerminal':
                 case 'integratedTerminal': {
@@ -162,7 +167,7 @@ export class LocalDebugClient extends DebugClient<LaunchRequestArguments> {
         });
     }
     // tslint:disable-next-line:member-ordering
-    protected buildLauncherArguments(): string[] {
+    private buildDebugOptions(launcherScriptFile:string, cwd:string, debugPort:number): string[] {
         const vsDebugOptions: string[] = [DebugOptions.RedirectOutput];
         if (Array.isArray(this.args.debugOptions)) {
             this.args.debugOptions.filter(opt => VALID_DEBUG_OPTIONS.indexOf(opt) >= 0)
@@ -173,15 +178,18 @@ export class LocalDebugClient extends DebugClient<LaunchRequestArguments> {
         if (djangoIndex >= 0) {
             vsDebugOptions[djangoIndex] = 'DjangoDebugging';
         }
+        return [ptVSToolsFilePath, processCwd, debuport.toString(), '34806ad9-833a-4524-8cd6-18ca4aa74f14', vsDebugOptions.join(',')];
+    }
+    private buildPythonArgs(): string[] {
         const programArgs = Array.isArray(this.args.args) && this.args.args.length > 0 ? this.args.args : [];
         if (typeof this.args.module === 'string' && this.args.module.length > 0) {
-            return [vsDebugOptions.join(','), '-m', this.args.module].concat(programArgs);
+            return ['-m', this.args.module].concat(programArgs);
         }
-        const args = [vsDebugOptions.join(',')];
         if (this.args.program && this.args.program.length > 0) {
-            args.push(this.args.program);
+            return [this.args.program, ...programArgs];
+        } else {
+            return programArgs;
         }
-        return args.concat(programArgs);
     }
     private launchExternalTerminal(sudo: boolean, cwd: string, pythonPath: string, args: string[], env: {}) {
         return new Promise((resolve, reject) => {

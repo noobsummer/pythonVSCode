@@ -10,7 +10,7 @@ import { Logger } from 'vscode-debugadapter';
 import { Message } from 'vscode-debugadapter/lib/messages';
 
 export interface IDebugLauncherScriptProvider {
-    getLauncherFilePath(): string;
+    getLauncherFilePath(): string | undefined;
 }
 
 export const IProtocolParser = Symbol('IProtocolParser');
