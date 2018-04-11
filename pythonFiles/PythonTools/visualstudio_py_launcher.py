@@ -13,7 +13,6 @@
 #
 # See the Apache Version 2.0 License for specific language governing
 # permissions and limitations under the License.
-
 """
 Starts Debugging, expected to start with normal program
 to start as first argument and directory to run from as
@@ -87,4 +86,5 @@ Press Enter to close. . .''')
     sys.exit(1)
 
 # and start debugging
-vspd.debug(filename, port_num, '34806ad9-833a-4524-8cd6-18ca4aa74f14', '', run_as)
+vspd.debug(filename, port_num, '34806ad9-833a-4524-8cd6-18ca4aa74f14', '',
+           run_as)

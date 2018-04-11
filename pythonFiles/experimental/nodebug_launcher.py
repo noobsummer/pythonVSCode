@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-
 """Run a block of code or Python file."""
 
 import os.path
@@ -16,12 +15,14 @@ try:
     import visualstudio_py_util as _vspu
 except:
     traceback.print_exc()
-    print("""Internal error detected. Please copy the above traceback and report at
+    print(
+        """Internal error detected. Please copy the above traceback and report at
 https://github.com/Microsoft/vscode-python/issues""")
     sys.exit(1)
 
 HOSTNAME = 'localhost'
 WAIT_FOR_LAUNCH_REQUEST_TIMEOUT = 10000
+
 
 def parse_argv():
     """Parses arguments for use with the launcher.
@@ -57,6 +58,7 @@ def parse_argv():
 
     return (filename, port_num, run_as)
 
+
 def run(file, port_num, run_as='script'):
     if not start_message_processor(HOSTNAME, port_num):
         return
@@ -73,6 +75,7 @@ def run(file, port_num, run_as='script'):
     except:
         exc_type, exc_value, exc_tb = sys.exc_info()
         handle_exception(exc_type, exc_value, exc_tb)
+
 
 def handle_exception(exc_type, exc_value, exc_tb):
     # Specifies list of files not to display in stack trace.
@@ -113,15 +116,19 @@ def is_same_py_file(file_1, file_2):
 
     return file_1 == file_2
 
+
 def start_message_processor(host, port_num):
     launch_notification = threading.Event()
+
     def on_launch():
         launch_notification.set()
 
-    daemon = Daemon(notify_launch=on_launch, addhandlers=True,killonclose=True)
+    daemon = Daemon(
+        notify_launch=on_launch, addhandlers=True, killonclose=True)
     start_client(daemon, host, port_num)
 
     return launch_notification.wait(WAIT_FOR_LAUNCH_REQUEST_TIMEOUT)
+
 
 if __name__ == '__main__':
     filename, port_num, run_as = parse_argv()

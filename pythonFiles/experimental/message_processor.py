@@ -21,7 +21,10 @@ class Daemon(object):
     exitcode = 0
     exiting_via_exit_handler = False
 
-    def __init__(self, notify_launch=lambda : None, addhandlers=True, killonclose=True):
+    def __init__(self,
+                 notify_launch=lambda: None,
+                 addhandlers=True,
+                 killonclose=True):
         self.addhandlers = addhandlers
         self.killonclose = killonclose
         self._notify_launch = notify_launch
@@ -76,6 +79,7 @@ class Daemon(object):
                 self.close()
             if self._adapter is not None:
                 self._adapter._wait_for_server_thread()
+
         atexit.register(handler)
 
     def _set_signal_handlers(self):
@@ -86,6 +90,7 @@ class Daemon(object):
             if not self._closed:
                 self.close()
             sys.exit(0)
+
         signal.signal(signal.SIGHUP, handler)
 
     def _release_connection(self):
@@ -115,15 +120,16 @@ class VSCodeMessageProcessor(ipcjson.SocketIO, ipcjson.IpcChannel):
     protocol.
     """
 
-    def __init__(self, socket,
-                 notify_launch=lambda : None,
-                 notify_disconnecting = lambda: None,
-                 notify_closing = lambda: None,
-                 logfile=None,
-                 ):
-        super(VSCodeMessageProcessor, self).__init__(socket=socket,
-                                                     own_socket=False,
-                                                     logfile=logfile)
+    def __init__(
+            self,
+            socket,
+            notify_launch=lambda: None,
+            notify_disconnecting=lambda: None,
+            notify_closing=lambda: None,
+            logfile=None,
+    ):
+        super(VSCodeMessageProcessor, self).__init__(
+            socket=socket, own_socket=False, logfile=logfile)
         self._socket = socket
         self._notify_launch = notify_launch
         self._notify_disconnecting = notify_disconnecting
@@ -151,7 +157,10 @@ class VSCodeMessageProcessor(ipcjson.SocketIO, ipcjson.IpcChannel):
             'output',
             category='telemetry',
             output='ptvsd',
-            data={'version': __version__, 'nodebug': True},
+            data={
+                'version': __version__,
+                'nodebug': True
+            },
         )
 
     # closing the adapter
@@ -213,7 +222,6 @@ class VSCodeMessageProcessor(ipcjson.SocketIO, ipcjson.IpcChannel):
         self._notify_disconnecting(not self._closed)
         if not self._closed:
             self.close()
-
 
     # VSC protocol handlers
 
