@@ -13,6 +13,7 @@ export class LocalDebugClientV2 extends LocalDebugClient {
         super(args, debugSession, canLaunchTerminal, launcherScriptProvider);
     }
     protected buildDebugArguments(cwd: string, debugPort: number): string[] {
+<<<<<<< 157f392165ac177707587117ecf76faffe5c4062
         const noDebugArg = this.args.noDebug ? ['--nodebug'] : [];
         return ['-m', 'ptvsd', ...noDebugArg, '--host', 'localhost', '--port', debugPort.toString()];
     }
@@ -25,5 +26,8 @@ export class LocalDebugClientV2 extends LocalDebugClient {
             return ['--file', this.args.program, ...programArgs];
         }
         return programArgs;
+=======
+        return [cwd, debugPort.toString()];
+>>>>>>> no debug launcher
     }
 }

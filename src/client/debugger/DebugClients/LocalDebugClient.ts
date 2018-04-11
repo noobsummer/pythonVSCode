@@ -159,12 +159,12 @@ export class LocalDebugClient extends DebugClient<LaunchRequestArguments> {
         });
     }
     private buildLaunchArguments(cwd: string, debugPort: number): string[] {
-        return [...this.buildDebugArguments(cwd, debugPort), ...this.buildStandardArguments()];
+        const ptVSToolsFilePath = this.launcherScriptProvider.getLauncherFilePath();
+        return [ptVSToolsFilePath, ...this.buildDebugArguments(cwd, debugPort), ...this.buildStandardArguments()];
     }
 
     // tslint:disable-next-line:member-ordering
     protected buildDebugArguments(cwd: string, debugPort: number): string[] {
-        const ptVSToolsFilePath = this.launcherScriptProvider.getLauncherFilePath();
         const vsDebugOptions: string[] = [DebugOptions.RedirectOutput];
         if (Array.isArray(this.args.debugOptions)) {
             this.args.debugOptions.filter(opt => VALID_DEBUG_OPTIONS.indexOf(opt) >= 0)
@@ -175,7 +175,7 @@ export class LocalDebugClient extends DebugClient<LaunchRequestArguments> {
         if (djangoIndex >= 0) {
             vsDebugOptions[djangoIndex] = 'DjangoDebugging';
         }
-        return [ptVSToolsFilePath, cwd, debugPort.toString(), '34806ad9-833a-4524-8cd6-18ca4aa74f14', vsDebugOptions.join(',')];
+        return [cwd, debugPort.toString(), '34806ad9-833a-4524-8cd6-18ca4aa74f14', vsDebugOptions.join(',')];
     }
     // tslint:disable-next-line:member-ordering
     protected buildStandardArguments() {
