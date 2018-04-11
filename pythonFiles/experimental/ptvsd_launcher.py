@@ -31,27 +31,16 @@ import traceback
 # Arguments are:
 # 1. Working directory.
 # 2. VS debugger port to connect to.
-# 3. GUID for the debug session.
-# 4. Debug options (as list of names - see enum PythonDebugOptions).
-# 5. '-g' to use the installed ptvsd package, rather than bundled one.
-# 6. '-m' or '-c' to override the default run-as mode. [optional]
-# 7. Startup script name.
-# 8. Script arguments.
+# 3. '-m' or '-c' to override the default run-as mode. [optional]
+# 4. Startup script name.
+# 5. Script arguments.
 
 # change to directory we expected to start from
 os.chdir(sys.argv[1])
 
 port_num = int(sys.argv[2])
-debug_id = sys.argv[3]
-debug_options = set([opt.strip() for opt in sys.argv[4].split(',')])
 
-del sys.argv[0:5]
-
-# Use bundled ptvsd or not?
-bundled_ptvsd = True
-if sys.argv and sys.argv[0] == '-g':
-    bundled_ptvsd = False
-    del sys.argv[0]
+del sys.argv[0:3]
 
 # set run_as mode appropriately
 run_as = 'script'
@@ -65,14 +54,8 @@ if sys.argv and sys.argv[0] == '-c':
 # preserve filename before we del sys
 filename = sys.argv[0]
 
-# fix sys.path to be the script file dir
-sys.path[0] = ''
-
 # Load the debugger package
 try:
-    if bundled_ptvsd:
-        ptvs_lib_path = os.path.dirname(__file__)
-        sys.path.insert(0, ptvs_lib_path)
     import ptvsd
     import ptvsd.debugger as vspd
     vspd.DONT_DEBUG.append(os.path.normcase(__file__))
@@ -88,9 +71,6 @@ Press Enter to close. . .''')
     except NameError:
         input()
     sys.exit(1)
-finally:
-    if bundled_ptvsd:
-        sys.path.remove(ptvs_lib_path)
 
 # and start debugging
-vspd.debug(filename, port_num, debug_id, debug_options, run_as)
+vspd.debug(filename, port_num, '34806ad9-833a-4524-8cd6-18ca4aa74f14', '', run_as)
