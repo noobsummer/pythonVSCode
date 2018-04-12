@@ -6,6 +6,8 @@ import os
 import platform
 import signal
 import socket
+import sys
+import time
 import threading
 import warnings
 
@@ -13,18 +15,66 @@ from ptvsd.daemon import DaemonClosedError
 from ptvsd import ipcjson, __version__
 from ptvsd.socket import close_socket
 from ptvsd.wrapper import WAIT_FOR_DISCONNECT_REQUEST_TIMEOUT, WAIT_FOR_THREAD_FINISH_TIMEOUT
+from pydevd import CheckOutputThread, init_stdout_redirect, init_stderr_redirect
+from _pydevd_bundle.pydevd_kill_all_pydevd_threads import kill_all_pydev_threads
 
+class OutputRedirection(object):
+    def __init__(self, on_output=lambda category, output: None):
+        self._on_output = on_output
+        self._stopped = False
+        self._thread = None
+
+    def start(self):
+        self._enable_redirection()
+        self._thread = threading.Thread(target=self._run, name='ptvsd.output.redirection')
+        self._thread.daemon = True
+        self._thread.start()
+        
+    def stop(self):
+        if self._stopped:
+            return
+
+        self._stopped = true
+        self._thread.join(WAIT_FOR_THREAD_FINISH_TIMEOUT)
+        self._thread.join(10)
+
+    def _enable_redirection(self):
+        init_stdout_redirect()
+        init_stderr_redirect()
+
+    def _check_output(self, out, category):
+        '''Checks the output to see if we have to send some buffered output to the debug server
+
+        @param out: sys.stdout or sys.stderr
+        @param category: Whether 
+        '''
+
+        try:
+            v = out.getvalue()
+
+            if v:
+                self._on_output(category, v)
+        except:
+            traceback.print_exc()
+
+    def _run(self):
+        import sys
+        while not self._stopped:
+            self._check_output(sys.stdoutBuf, 'stdout')
+            self._check_output(sys.stderrBuf, 'stderr')
+            time.sleep(0.3)
 
 class Daemon(object):
     """The process-level manager for the VSC protocol debug adapter."""
-
-    exitcode = 0
-    exiting_via_exit_handler = False
 
     def __init__(self,
                  notify_launch=lambda: None,
                  addhandlers=True,
                  killonclose=True):
+
+        self.exitcode = 0
+        self.exiting_via_exit_handler = False
+
         self.addhandlers = addhandlers
         self.killonclose = killonclose
         self._notify_launch = notify_launch
@@ -36,6 +86,10 @@ class Daemon(object):
     def start(self, server=None):
         if self._closed:
             raise DaemonClosedError()
+
+        self._output_monitor = OutputRedirection(self._send_output)
+        self._output_monitor.start()
+
         return None
 
     def set_connection(self, client):
@@ -63,6 +117,7 @@ class Daemon(object):
 
     def close(self):
         """Stop all loops and release all resources."""
+        self._output_monitor.stop()
         if self._closed:
             raise DaemonClosedError('already closed')
         self._closed = True
@@ -112,6 +167,13 @@ class Daemon(object):
             return
         self.close()
 
+    def _send_output(self, category, output):
+        self._adapter.send_event(
+            'output',
+            category=category,
+            output=output
+        )
+
 
 class VSCodeMessageProcessor(ipcjson.SocketIO, ipcjson.IpcChannel):
     """IPC JSON message processor for VSC debugger protocol.
@@ -147,7 +209,7 @@ class VSCodeMessageProcessor(ipcjson.SocketIO, ipcjson.IpcChannel):
         # VSC msg processing loop
         self.server_thread = threading.Thread(
             target=self.process_messages,
-            name='ptvsd.Client1234',
+            name='ptvsd.Client',
         )
         self.server_thread.daemon = True
         self.server_thread.start()
