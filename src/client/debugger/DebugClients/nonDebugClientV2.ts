@@ -4,7 +4,7 @@
 'use strict';
 
 import { ChildProcess } from 'child_process';
-import { DebugSession, OutputEvent } from 'vscode-debugadapter';
+import { DebugSession } from 'vscode-debugadapter';
 import { LaunchRequestArguments } from '../Common/Contracts';
 import { IDebugLauncherScriptProvider } from '../types';
 import { NonDebugClient } from './NonDebugClient';
@@ -18,9 +18,6 @@ export class NonDebugClientV2 extends NonDebugClient {
         return [cwd, debugPort.toString()];
     }
     protected handleProcessOutput(proc: ChildProcess, _failedToLaunch: (error: Error | string | Buffer) => void) {
-        proc.stdout.on('data', data => {
-            this.debugSession.sendEvent(new OutputEvent(data.toString(), 'stdout'));
-        });
-        proc.stderr.on('data', data => this.debugSession.sendEvent(new OutputEvent(data.toString(), 'stderr')));
+        // Do nothing
     }
 }

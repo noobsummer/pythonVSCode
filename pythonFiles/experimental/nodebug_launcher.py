@@ -72,6 +72,7 @@ def run(file, port_num, run_as='script'):
             _vspu.exec_code(file, '<string>', globals_obj)
         else:
             _vspu.exec_file(file, globals_obj)
+        time.sleep(0.4)
     except:
         exc_type, exc_value, exc_tb = sys.exc_info()
         handle_exception(exc_type, exc_value, exc_tb)
