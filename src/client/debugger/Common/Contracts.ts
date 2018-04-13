@@ -51,6 +51,22 @@ export interface ExceptionHandling {
 
 export type DebuggerType = 'python' | 'pythonExperimental';
 
+export type AdditionalLaunchDebugOptions = {
+    redirectOutput?: boolean;
+    django?: boolean;
+    jinja?: boolean;
+    debugStdLib?: boolean;
+    sudo?: boolean;
+    pyramid?: boolean;
+};
+
+export type AdditionalAttachDebugOptions = {
+    redirectOutput?: boolean;
+    django?: boolean;
+    jinja?: boolean;
+    debugStdLib?: boolean;
+};
+
 export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     type?: DebuggerType;
     /** An absolute path to the program to debug. */
