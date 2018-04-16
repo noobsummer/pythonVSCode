@@ -27,7 +27,7 @@ export class PythonV2DebugConfigurationProvider extends BaseConfigurationProvide
         if (debugConfiguration.jinja) {
             debugOptions.push(DebugOptions.Jinja);
         }
-        if (debugConfiguration.redirectOutput) {
+        if (debugConfiguration.redirectOutput || debugConfiguration.redirectOutput === undefined) {
             debugOptions.push(DebugOptions.RedirectOutput);
         }
         if (debugConfiguration.sudo) {
@@ -54,7 +54,7 @@ export class PythonV2DebugConfigurationProvider extends BaseConfigurationProvide
         if (debugConfiguration.jinja) {
             debugOptions.push(DebugOptions.Jinja);
         }
-        if (debugConfiguration.redirectOutput) {
+        if (debugConfiguration.redirectOutput || debugConfiguration.redirectOutput === undefined) {
             debugOptions.push(DebugOptions.RedirectOutput);
         }
 

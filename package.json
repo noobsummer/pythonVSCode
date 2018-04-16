@@ -1012,7 +1012,7 @@
                             },
                             "pathMappings": {
                                 "type": "array",
-                                "label": "Additional path mappings.",
+                                "label": "Path mappings.",
                                 "items": {
                                     "type": "object",
                                     "label": "Path mapping",
@@ -1063,7 +1063,7 @@
                                 ],
                                 "description": "Jinja template debugging (e.g. Flask).",
                                 "default": null
-                            }                            
+                            }
                         }
                     }
                 },
