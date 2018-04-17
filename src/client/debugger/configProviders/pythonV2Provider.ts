@@ -19,53 +19,53 @@ export class PythonV2DebugConfigurationProvider extends BaseConfigurationProvide
         super.provideLaunchDefaults(workspaceFolder, debugConfiguration);
         const debugOptions = debugConfiguration.debugOptions!;
         if (debugConfiguration.debugStdLib) {
-            debugOptions.push(DebugOptions.DebugStdLib);
+            this.debugOption(debugOptions, DebugOptions.DebugStdLib);
         }
         if (debugConfiguration.django) {
-            debugOptions.push(DebugOptions.Django);
+            this.debugOption(debugOptions, DebugOptions.Django);
         }
         if (debugConfiguration.jinja) {
-            debugOptions.push(DebugOptions.Jinja);
+            this.debugOption(debugOptions, DebugOptions.Jinja);
         }
         if (debugConfiguration.redirectOutput || debugConfiguration.redirectOutput === undefined) {
-            debugOptions.push(DebugOptions.RedirectOutput);
+            this.debugOption(debugOptions, DebugOptions.RedirectOutput);
         }
         if (debugConfiguration.sudo) {
-            debugOptions.push(DebugOptions.Sudo);
+            this.debugOption(debugOptions, DebugOptions.Sudo);
         }
         if (this.serviceContainer.get<IPlatformService>(IPlatformService).isWindows) {
-            debugOptions.push(DebugOptions.FixFilePathCase);
+            this.debugOption(debugOptions, DebugOptions.FixFilePathCase);
         }
         if (debugConfiguration.module && debugConfiguration.module.toUpperCase() === 'FLASK'
             && debugOptions.indexOf(DebugOptions.Jinja) === -1
             && debugConfiguration.jinja !== false) {
-            debugOptions.push(DebugOptions.Jinja);
+            this.debugOption(debugOptions, DebugOptions.Jinja);
         }
     }
     protected provideAttachDefaults(workspaceFolder: Uri, debugConfiguration: PythonAttachDebugConfiguration<AttachRequestArguments>): void {
         super.provideAttachDefaults(workspaceFolder, debugConfiguration);
         const debugOptions = debugConfiguration.debugOptions!;
         if (debugConfiguration.debugStdLib) {
-            debugOptions.push(DebugOptions.DebugStdLib);
+            this.debugOption(debugOptions, DebugOptions.DebugStdLib);
         }
         if (debugConfiguration.django) {
-            debugOptions.push(DebugOptions.Django);
+            this.debugOption(debugOptions, DebugOptions.Django);
         }
         if (debugConfiguration.jinja) {
-            debugOptions.push(DebugOptions.Jinja);
+            this.debugOption(debugOptions, DebugOptions.Jinja);
         }
         if (debugConfiguration.redirectOutput || debugConfiguration.redirectOutput === undefined) {
-            debugOptions.push(DebugOptions.RedirectOutput);
+            this.debugOption(debugOptions, DebugOptions.RedirectOutput);
         }
 
         // We'll need paths to be fixed only in the case where local and remote hosts are the same
         // I.e. only if hostName === 'localhost' or '127.0.0.1' or ''
         const isLocalHost = !debugConfiguration.host || debugConfiguration.host === 'localhost' || debugConfiguration.host === '127.0.0.1';
         if (this.serviceContainer.get<IPlatformService>(IPlatformService).isWindows && isLocalHost) {
-            debugOptions.push(DebugOptions.FixFilePathCase);
+            this.debugOption(debugOptions, DebugOptions.FixFilePathCase);
         }
         if (this.serviceContainer.get<IPlatformService>(IPlatformService).isWindows) {
-            debugOptions.push(DebugOptions.WindowsClient);
+            this.debugOption(debugOptions, DebugOptions.WindowsClient);
         }
 
         if (!debugConfiguration.pathMappings) {
@@ -77,5 +77,11 @@ export class PythonV2DebugConfigurationProvider extends BaseConfigurationProvide
                 remoteRoot: debugConfiguration.remoteRoot
             });
         }
+    }
+    private debugOption(debugOptions: DebugOptions[], debugOption: DebugOptions) {
+        if (debugOptions.indexOf(debugOption) >= 0) {
+            return;
+        }
+        debugOptions.push(debugOption);
     }
 }

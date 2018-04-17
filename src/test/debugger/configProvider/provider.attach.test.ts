@@ -234,9 +234,10 @@ enum OS {
                 setupWorkspaces([defaultWorkspace]);
 
                 const debugOptions = debugOptionsAvailable.slice().concat(DebugOptions.Jinja, DebugOptions.Sudo);
+                const expectedDebugOptions = debugOptions.slice();
                 const debugConfig = await debugProvider.resolveDebugConfiguration!(workspaceFolder, { debugOptions, request: 'attach' } as any as DebugConfiguration);
 
-                expect(debugConfig).to.have.property('debugOptions').to.be.deep.equal(debugOptions);
+                expect(debugConfig).to.have.property('debugOptions').to.be.deep.equal(expectedDebugOptions);
             });
         });
     });
