@@ -165,7 +165,7 @@ enum OS {
 
                 expect(debugConfig).to.have.property('localRoot', localRoot);
                 if (provider.debugType === 'pythonExperimental') {
-                    expect(debugConfig!.pathMappings).to.deep.include({ localRoot: localRoot });
+                    expect(debugConfig!.pathMappings).to.be.lengthOf(0);
                 }
             });
             test('Ensure \'localRoot\' and \'remoteRoot\' is used', async function () {
