@@ -42,6 +42,11 @@ export abstract class BaseConfigurationProvider<L extends BaseLaunchRequestArgum
 
             this.provideLaunchDefaults(workspaceFolder, config);
         }
+
+        const dbgConfig = (debugConfiguration as (BaseLaunchRequestArguments | BaseAttachRequestArguments));
+        if (Array.isArray(dbgConfig.debugOptions)) {
+            dbgConfig.debugOptions = dbgConfig.debugOptions!.filter((item, pos) => dbgConfig.debugOptions!.indexOf(item) === pos);
+        }
         return debugConfiguration;
     }
     protected provideAttachDefaults(workspaceFolder: Uri | undefined, debugConfiguration: PythonAttachDebugConfiguration<A>): void {

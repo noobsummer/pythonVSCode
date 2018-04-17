@@ -99,12 +99,12 @@ export interface BaseAttachRequestArguments extends DebugProtocol.AttachRequestA
     port?: number;
     host?: string;
     logToFile?: boolean;
+    debugOptions?: DebugOptions[];
 }
 export interface AttachRequestArgumentsV1 extends BaseAttachRequestArguments {
     secret?: string;
     localRoot: string;
     remoteRoot: string;
-    debugOptions?: DebugOptions[];
 }
 
 export interface AttachRequestArguments extends BaseAttachRequestArguments, AdditionalAttachDebugOptions {
