@@ -2,7 +2,7 @@ import { DebugSession } from 'vscode-debugadapter';
 import { AttachRequestArguments, LaunchRequestArguments } from '../Common/Contracts';
 import { IDebugLauncherScriptProvider } from '../types';
 import { DebugClient } from './DebugClient';
-import { DebuggerLauncherScriptProvider, DebuggerV2LauncherScriptProvider, NoDebugLauncherScriptProvider, NoDebugLauncherScriptProviderV2 } from './launcherProvider';
+import { DebuggerLauncherScriptProvider, NoDebugLauncherScriptProvider } from './launcherProvider';
 import { LocalDebugClient } from './LocalDebugClient';
 import { LocalDebugClientV2 } from './localDebugClientV2';
 import { NonDebugClient } from './NonDebugClient';
@@ -13,10 +13,10 @@ export function CreateLaunchDebugClient(launchRequestOptions: LaunchRequestArgum
     let launchScriptProvider: IDebugLauncherScriptProvider;
     let debugClientClass: typeof LocalDebugClient;
     if (launchRequestOptions.noDebug === true) {
-        launchScriptProvider = launchRequestOptions.type === 'pythonExperimental' ? new NoDebugLauncherScriptProviderV2() : new NoDebugLauncherScriptProvider();
+        launchScriptProvider = new NoDebugLauncherScriptProvider();
         debugClientClass = launchRequestOptions.type === 'pythonExperimental' ? NonDebugClientV2 : NonDebugClient;
     } else {
-        launchScriptProvider = launchRequestOptions.type === 'pythonExperimental' ? new DebuggerV2LauncherScriptProvider() : new DebuggerLauncherScriptProvider();
+        launchScriptProvider = new DebuggerLauncherScriptProvider();
         debugClientClass = launchRequestOptions.type === 'pythonExperimental' ? LocalDebugClientV2 : LocalDebugClient;
     }
     return new debugClientClass(launchRequestOptions, debugSession, canLaunchTerminal, launchScriptProvider);
