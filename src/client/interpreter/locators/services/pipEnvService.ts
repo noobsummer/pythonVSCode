@@ -92,13 +92,20 @@ export class PipEnvService extends CacheableLocatorService {
     private async invokePipenv(arg: string, rootPath: string): Promise<string | undefined> {
         try {
             const result = await this.process.exec(execName, [arg], { cwd: rootPath });
-            if (result && result.stdout) {
-                return result.stdout.trim();
+            if (result) {
+                const stdout = result.stdout ? result.stdout.trim() : '';
+                const stderr = result.stderr ? result.stderr.trim() : '';
+                if (stderr.length > 0 && stdout.length === 0) {
+                    throw new Error(stderr);
+                }
+                return stdout;
             }
             // tslint:disable-next-line:no-empty
         } catch (error) {
+            console.error(error);
+            const errorMessage = error.message || error;
             const appShell = this.serviceContainer.get<IApplicationShell>(IApplicationShell);
-            appShell.showWarningMessage(`Workspace contains pipfile but attempt to run 'pipenv --venv' failed with ${error}. Make sure pipenv is on the PATH.`);
+            appShell.showWarningMessage(`Workspace contains pipfile but attempt to run 'pipenv --venv' failed with ${errorMessage}. Make sure pipenv is on the PATH.`);
         }
     }
 }

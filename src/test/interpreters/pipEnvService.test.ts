@@ -3,6 +3,8 @@
 
 'use strict';
 
+// tslint:disable:max-func-body-length
+
 import { expect } from 'chai';
 import * as path from 'path';
 import * as TypeMoq from 'typemoq';
@@ -20,7 +22,6 @@ enum OS {
     Mac, Windows, Linux
 }
 
-// tslint:disable-next-line:max-func-body-length
 suite('Interpreters - PipEnv', () => {
     const rootWorkspace = Uri.file(path.join('usr', 'desktop', 'wkspc1')).fsPath;
     EnumEx.getNamesAndValues(OS).forEach(os => {
@@ -81,10 +82,21 @@ suite('Interpreters - PipEnv', () => {
                 expect(environments).to.be.deep.equal([]);
                 fileSystem.verifyAll();
             });
-            test(`Should display wanring message if there is a \'PipFile\' but \'pipenv --venv\' failes ${testSuffix}`, async () => {
+            test(`Should display warning message if there is a \'PipFile\' but \'pipenv --venv\' failes ${testSuffix}`, async () => {
                 const env = {};
                 currentProcess.setup(c => c.env).returns(() => env);
                 processService.setup(p => p.exec(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.reject(''));
+                fileSystem.setup(fs => fs.fileExistsAsync(TypeMoq.It.isValue(path.join(rootWorkspace, 'Pipfile')))).returns(() => Promise.resolve(true));
+                appShell.setup(a => a.showWarningMessage(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve('')).verifiable(TypeMoq.Times.once());
+                const environments = await pipEnvService.getInterpreters(resource);
+
+                expect(environments).to.be.deep.equal([]);
+                appShell.verifyAll();
+            });
+            test(`Should display warning message if there is a \'PipFile\' but \'pipenv --venv\' failes with stderr ${testSuffix}`, async () => {
+                const env = {};
+                currentProcess.setup(c => c.env).returns(() => env);
+                processService.setup(p => p.exec(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve({ stderr: 'PipEnv Failed', stdout: '' }));
                 fileSystem.setup(fs => fs.fileExistsAsync(TypeMoq.It.isValue(path.join(rootWorkspace, 'Pipfile')))).returns(() => Promise.resolve(true));
                 appShell.setup(a => a.showWarningMessage(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve('')).verifiable(TypeMoq.Times.once());
                 const environments = await pipEnvService.getInterpreters(resource);
