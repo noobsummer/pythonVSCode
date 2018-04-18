@@ -8,6 +8,7 @@ import { IApplicationShell, IWorkspaceService } from '../../../common/applicatio
 import { IFileSystem } from '../../../common/platform/types';
 import { IProcessService } from '../../../common/process/types';
 import { ICurrentProcess } from '../../../common/types';
+import { IEnvironmentVariablesProvider } from '../../../common/variables/types';
 import { getPythonExecutable } from '../../../debugger/Common/Utils';
 import { IServiceContainer } from '../../../ioc/types';
 import { IInterpreterVersionService, InterpreterType, PythonInterpreter } from '../../contracts';
@@ -22,6 +23,7 @@ export class PipEnvService extends CacheableLocatorService {
     private readonly process: IProcessService;
     private readonly workspace: IWorkspaceService;
     private readonly fs: IFileSystem;
+    private readonly envVarsProvider: IEnvironmentVariablesProvider;
 
     constructor(@inject(IServiceContainer) serviceContainer: IServiceContainer) {
         super('PipEnvService', serviceContainer);
@@ -29,6 +31,7 @@ export class PipEnvService extends CacheableLocatorService {
         this.process = this.serviceContainer.get<IProcessService>(IProcessService);
         this.workspace = this.serviceContainer.get<IWorkspaceService>(IWorkspaceService);
         this.fs = this.serviceContainer.get<IFileSystem>(IFileSystem);
+        this.envVarsProvider = this.serviceContainer.get<IEnvironmentVariablesProvider>(IEnvironmentVariablesProvider);
     }
     // tslint:disable-next-line:no-empty
     public dispose() { }
@@ -91,7 +94,8 @@ export class PipEnvService extends CacheableLocatorService {
 
     private async invokePipenv(arg: string, rootPath: string): Promise<string | undefined> {
         try {
-            const result = await this.process.exec(execName, [arg], { cwd: rootPath });
+            const env = await this.envVarsProvider.getEnvironmentVariables(Uri.file(rootPath));
+            const result = await this.process.exec(execName, [arg], { cwd: rootPath, env });
             if (result) {
                 const stdout = result.stdout ? result.stdout.trim() : '';
                 const stderr = result.stderr ? result.stderr.trim() : '';

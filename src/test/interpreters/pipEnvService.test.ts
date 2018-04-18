@@ -3,7 +3,7 @@
 
 'use strict';
 
-// tslint:disable:max-func-body-length
+// tslint:disable:max-func-body-length no-any
 
 import { expect } from 'chai';
 import * as path from 'path';
@@ -14,6 +14,7 @@ import { EnumEx } from '../../client/common/enumUtils';
 import { IFileSystem } from '../../client/common/platform/types';
 import { IProcessService } from '../../client/common/process/types';
 import { ICurrentProcess, IPersistentState, IPersistentStateFactory } from '../../client/common/types';
+import { IEnvironmentVariablesProvider } from '../../client/common/variables/types';
 import { IInterpreterLocatorService, IInterpreterVersionService } from '../../client/interpreter/contracts';
 import { PipEnvService } from '../../client/interpreter/locators/services/pipEnvService';
 import { IServiceContainer } from '../../client/ioc/types';
@@ -36,6 +37,7 @@ suite('Interpreters - PipEnv', () => {
             let fileSystem: TypeMoq.IMock<IFileSystem>;
             let appShell: TypeMoq.IMock<IApplicationShell>;
             let persistentStateFactory: TypeMoq.IMock<IPersistentStateFactory>;
+            let envVarsProvider: TypeMoq.IMock<IEnvironmentVariablesProvider>;
             setup(() => {
                 serviceContainer = TypeMoq.Mock.ofType<IServiceContainer>();
                 const workspaceService = TypeMoq.Mock.ofType<IWorkspaceService>();
@@ -45,6 +47,7 @@ suite('Interpreters - PipEnv', () => {
                 appShell = TypeMoq.Mock.ofType<IApplicationShell>();
                 currentProcess = TypeMoq.Mock.ofType<ICurrentProcess>();
                 persistentStateFactory = TypeMoq.Mock.ofType<IPersistentStateFactory>();
+                envVarsProvider = TypeMoq.Mock.ofType<IEnvironmentVariablesProvider>();
 
                 // tslint:disable-next-line:no-any
                 const persistentState = TypeMoq.Mock.ofType<IPersistentState<any>>();
@@ -65,6 +68,7 @@ suite('Interpreters - PipEnv', () => {
                 serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IFileSystem))).returns(() => fileSystem.object);
                 serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IApplicationShell))).returns(() => appShell.object);
                 serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IPersistentStateFactory))).returns(() => persistentStateFactory.object);
+                serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IEnvironmentVariablesProvider))).returns(() => envVarsProvider.object);
 
                 pipEnvService = new PipEnvService(serviceContainer.object);
             });
@@ -75,6 +79,7 @@ suite('Interpreters - PipEnv', () => {
             });
             test(`Should return an empty list if there is a \'PipFile\'${testSuffix}`, async () => {
                 const env = {};
+                envVarsProvider.setup(e => e.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({})).verifiable(TypeMoq.Times.once());
                 currentProcess.setup(c => c.env).returns(() => env);
                 fileSystem.setup(fs => fs.fileExistsAsync(TypeMoq.It.isValue(path.join(rootWorkspace, 'Pipfile')))).returns(() => Promise.resolve(false)).verifiable(TypeMoq.Times.once());
                 const environments = await pipEnvService.getInterpreters(resource);
@@ -92,9 +97,11 @@ suite('Interpreters - PipEnv', () => {
 
                 expect(environments).to.be.deep.equal([]);
                 appShell.verifyAll();
+                appShell.verifyAll();
             });
             test(`Should display warning message if there is a \'PipFile\' but \'pipenv --venv\' failes with stderr ${testSuffix}`, async () => {
                 const env = {};
+                envVarsProvider.setup(e => e.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({})).verifiable(TypeMoq.Times.once());
                 currentProcess.setup(c => c.env).returns(() => env);
                 processService.setup(p => p.exec(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve({ stderr: 'PipEnv Failed', stdout: '' }));
                 fileSystem.setup(fs => fs.fileExistsAsync(TypeMoq.It.isValue(path.join(rootWorkspace, 'Pipfile')))).returns(() => Promise.resolve(true));
@@ -102,11 +109,13 @@ suite('Interpreters - PipEnv', () => {
                 const environments = await pipEnvService.getInterpreters(resource);
 
                 expect(environments).to.be.deep.equal([]);
+                envVarsProvider.verifyAll();
                 appShell.verifyAll();
             });
             test(`Should return interpreter information${testSuffix}`, async () => {
                 const env = {};
                 const venvDir = 'one';
+                envVarsProvider.setup(e => e.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({})).verifiable(TypeMoq.Times.once());
                 currentProcess.setup(c => c.env).returns(() => env);
                 processService.setup(p => p.exec(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve({ stdout: venvDir }));
                 interpreterVersionService.setup(v => v.getVersion(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve('xyz'));
@@ -116,6 +125,7 @@ suite('Interpreters - PipEnv', () => {
 
                 expect(environments).to.be.lengthOf(1);
                 fileSystem.verifyAll();
+                envVarsProvider.verifyAll();
             });
             test(`Should return interpreter information using PipFile defined in Env variable${testSuffix}`, async () => {
                 const envPipFile = 'XYZ';
@@ -123,6 +133,7 @@ suite('Interpreters - PipEnv', () => {
                     PIPENV_PIPFILE: envPipFile
                 };
                 const venvDir = 'one';
+                envVarsProvider.setup(e => e.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({})).verifiable(TypeMoq.Times.once());
                 currentProcess.setup(c => c.env).returns(() => env);
                 processService.setup(p => p.exec(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve({ stdout: venvDir }));
                 interpreterVersionService.setup(v => v.getVersion(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve('xyz'));
@@ -133,6 +144,7 @@ suite('Interpreters - PipEnv', () => {
 
                 expect(environments).to.be.lengthOf(1);
                 fileSystem.verifyAll();
+                envVarsProvider.verifyAll();
             });
         });
     });
