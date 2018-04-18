@@ -13,6 +13,7 @@
 #
 # See the Apache Version 2.0 License for specific language governing
 # permissions and limitations under the License.
+
 """
 Starts Debugging, expected to start with normal program
 to start as first argument and directory to run from as
@@ -44,16 +45,19 @@ Press Enter to close. . .''')
 # Arguments are:
 # 1. Working directory.
 # 2. VS debugger port to connect to.
-# 3. '-m' or '-c' to override the default run-as mode. [optional]
-# 4. Startup script name.
-# 5. Script arguments.
+# 3. GUID for the debug session.
+# 4. Debug options (as integer - see enum PythonDebugOptions).
+# 5. '-m' or '-c' to override the default run-as mode. [optional]
+# 6. Startup script name.
+# 7. Script arguments.
 
 # change to directory we expected to start from
 os.chdir(sys.argv[1])
 
 port_num = int(sys.argv[2])
-
-del sys.argv[0:3]
+debug_id = sys.argv[3]
+debug_options = vspd.parse_debug_options(sys.argv[4])
+del sys.argv[0:5]
 
 # set run_as mode appropriately
 run_as = 'script'
@@ -67,24 +71,22 @@ if sys.argv and sys.argv[0] == '-c':
 # preserve filename before we del sys
 filename = sys.argv[0]
 
-# Load the debugger package
-try:
-    import ptvsd
-    import ptvsd.debugger as vspd
-    vspd.DONT_DEBUG.append(os.path.normcase(__file__))
-except:
-    traceback.print_exc()
-    print('''
-Internal error detected. Please copy the above traceback and report at
-https://github.com/Microsoft/vscode-python/issues/new
+# fix sys.path to be the script file dir
+sys.path[0] = ''
 
-Press Enter to close. . .''')
-    try:
-        raw_input()
-    except NameError:
-        input()
-    sys.exit(1)
+# exclude ourselves from being debugged
+vspd.DONT_DEBUG.append(os.path.normcase(__file__))
+
+## Begin modification by Don Jayamanne
+# Get current Process id to pass back to debugger
+currentPid = os.getpid()
+## End Modification by Don Jayamanne
+
+# remove all state we imported
+del sys, os
 
 # and start debugging
-vspd.debug(filename, port_num, '34806ad9-833a-4524-8cd6-18ca4aa74f14', '',
-           run_as)
+## Begin modification by Don Jayamanne
+# Pass current Process id to pass back to debugger
+vspd.debug(filename, port_num, debug_id, debug_options, currentPid, run_as)
+## End Modification by Don Jayamanne
