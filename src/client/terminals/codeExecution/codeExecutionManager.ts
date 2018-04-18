@@ -35,6 +35,7 @@ export class CodeExecutionManager implements ICodeExecutionManager {
         if (!fileToExecute) {
             return;
         }
+        await codeExecutionHelper.saveFileIfDirty(fileToExecute);
         const executionService = this.serviceContainer.get<ICodeExecutionService>(ICodeExecutionService, 'standard');
         await executionService.executeFile(fileToExecute);
     }

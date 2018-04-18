@@ -133,4 +133,37 @@ suite('Terminal - Code Execution Helper', () => {
         const content = await helper.getSelectedTextToExecute(editor.object);
         expect(content).to.be.equal('3.0.10.5');
     });
+
+    test('saveFileIfDirty will not fail if file is not opened', async () => {
+        documentManager.setup(d => d.textDocuments).returns(() => []).verifiable(TypeMoq.Times.once());
+
+        await helper.saveFileIfDirty(Uri.file(`${__filename}.py`));
+        documentManager.verifyAll();
+    });
+
+    test('File will be saved if file is dirty', async () => {
+        documentManager.setup(d => d.textDocuments).returns(() => [document.object]).verifiable(TypeMoq.Times.once());
+        document.setup(doc => doc.isUntitled).returns(() => false);
+        document.setup(doc => doc.isDirty).returns(() => true);
+        document.setup(doc => doc.languageId).returns(() => PythonLanguage.language);
+        const expectedUri = Uri.file('one.py');
+        document.setup(doc => doc.uri).returns(() => expectedUri);
+
+        await helper.saveFileIfDirty(expectedUri);
+        documentManager.verifyAll();
+        document.verify(doc => doc.save(), TypeMoq.Times.once());
+    });
+
+    test('File will be not saved if file is not dirty', async () => {
+        documentManager.setup(d => d.textDocuments).returns(() => [document.object]).verifiable(TypeMoq.Times.once());
+        document.setup(doc => doc.isUntitled).returns(() => false);
+        document.setup(doc => doc.isDirty).returns(() => false);
+        document.setup(doc => doc.languageId).returns(() => PythonLanguage.language);
+        const expectedUri = Uri.file('one.py');
+        document.setup(doc => doc.uri).returns(() => expectedUri);
+
+        await helper.saveFileIfDirty(expectedUri);
+        documentManager.verifyAll();
+        document.verify(doc => doc.save(), TypeMoq.Times.never());
+    });
 });
