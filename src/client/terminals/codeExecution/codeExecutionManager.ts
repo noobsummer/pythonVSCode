@@ -64,6 +64,6 @@ export class CodeExecutionManager implements ICodeExecutionManager {
             return;
         }
 
-        await executionService.execute(codeToExecute!, activeEditor!.document.uri);
+        await executionService.execute(normalizedCode, activeEditor!.document.uri);
     }
 }
