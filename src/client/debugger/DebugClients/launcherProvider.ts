@@ -14,12 +14,6 @@ export class NoDebugLauncherScriptProvider implements IDebugLauncherScriptProvid
     }
 }
 
-export class NoDebugLauncherScriptProviderV2 implements IDebugLauncherScriptProvider {
-    public getLauncherFilePath(): string {
-        return path.join(path.dirname(__dirname), '..', '..', '..', 'pythonFiles', 'experimental', 'nodebug_launcher.py');
-    }
-}
-
 export class DebuggerLauncherScriptProvider implements IDebugLauncherScriptProvider {
     public getLauncherFilePath(): string {
         return path.join(path.dirname(__dirname), '..', '..', '..', 'pythonFiles', 'PythonTools', 'visualstudio_py_launcher.py');
