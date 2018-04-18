@@ -73,6 +73,45 @@ suite('Terminal - Code Execution Helper', () => {
         expect(uri).to.be.deep.equal(expectedUri);
     });
 
+    test('Returns file uri even if saving fails', async () => {
+        document.setup(doc => doc.isUntitled).returns(() => false);
+        document.setup(doc => doc.isDirty).returns(() => true);
+        document.setup(doc => doc.languageId).returns(() => PythonLanguage.language);
+        document.setup(doc => doc.save()).returns(() => Promise.resolve(false));
+        const expectedUri = Uri.file('one.py');
+        document.setup(doc => doc.uri).returns(() => expectedUri);
+        documentManager.setup(doc => doc.activeTextEditor).returns(() => editor.object);
+
+        const uri = await helper.getFileToExecute();
+        expect(uri).to.be.deep.equal(expectedUri);
+    });
+
+    test('Dirty files are saved', async () => {
+        document.setup(doc => doc.isUntitled).returns(() => false);
+        document.setup(doc => doc.isDirty).returns(() => true);
+        document.setup(doc => doc.languageId).returns(() => PythonLanguage.language);
+        const expectedUri = Uri.file('one.py');
+        document.setup(doc => doc.uri).returns(() => expectedUri);
+        documentManager.setup(doc => doc.activeTextEditor).returns(() => editor.object);
+
+        const uri = await helper.getFileToExecute();
+        expect(uri).to.be.deep.equal(expectedUri);
+        document.verify(doc => doc.save(), TypeMoq.Times.once());
+    });
+
+    test('Non-Dirty files are not-saved', async () => {
+        document.setup(doc => doc.isUntitled).returns(() => false);
+        document.setup(doc => doc.isDirty).returns(() => false);
+        document.setup(doc => doc.languageId).returns(() => PythonLanguage.language);
+        const expectedUri = Uri.file('one.py');
+        document.setup(doc => doc.uri).returns(() => expectedUri);
+        documentManager.setup(doc => doc.activeTextEditor).returns(() => editor.object);
+
+        const uri = await helper.getFileToExecute();
+        expect(uri).to.be.deep.equal(expectedUri);
+        document.verify(doc => doc.save(), TypeMoq.Times.never());
+    });
+
     test('Returns current line if nothing is selected', async () => {
         const lineContents = 'Line Contents';
         editor.setup(e => e.selection).returns(() => new Selection(3, 0, 3, 0));

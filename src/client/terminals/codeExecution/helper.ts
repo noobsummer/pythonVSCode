@@ -11,7 +11,7 @@ import { ICodeExecutionHelper } from '../types';
 
 @injectable()
 export class CodeExecutionHelper implements ICodeExecutionHelper {
-    constructor( @inject(IDocumentManager) private documentManager: IDocumentManager,
+    constructor(@inject(IDocumentManager) private documentManager: IDocumentManager,
         @inject(IApplicationShell) private applicationShell: IApplicationShell) {
 
     }
@@ -34,6 +34,9 @@ export class CodeExecutionHelper implements ICodeExecutionHelper {
         if (activeEditor.document.languageId !== PythonLanguage.language) {
             this.applicationShell.showErrorMessage('The active file is not a Python source file');
             return;
+        }
+        if (activeEditor.document.isDirty) {
+            await activeEditor.document.save();
         }
         return activeEditor.document.uri;
     }
