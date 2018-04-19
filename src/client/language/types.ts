@@ -72,22 +72,23 @@ export interface ICharacterStream extends ITextIterator {
 }
 
 export enum TokenType {
-    Unknown,
-    String,
-    Comment,
-    Keyword,
-    Number,
-    Identifier,
-    Operator,
-    Colon,
-    Semicolon,
-    Comma,
-    OpenBrace,
-    CloseBrace,
-    OpenBracket,
-    CloseBracket,
-    OpenCurly,
-    CloseCurly
+    Unknown = 'Unknown',
+    String = 'String',
+    Comment = 'Comment',
+    Keyword = 'Keyword',
+    Number = 'Number',
+    Identifier = 'Identifier',
+    Operator = 'Operator',
+    Colon = 'Colon',
+    Semicolon = 'Semicolon',
+    Comma = 'Comma',
+    OpenBrace = 'OpenBrace',
+    CloseBrace = 'CloseBrace',
+    OpenBracket = 'OpenBracket',
+    CloseBracket = 'CloseBracket',
+    OpenCurly = 'OpenCurly',
+    CloseCurly = 'CloseCurly',
+    Newline = 'Newline'
 }
 
 export interface IToken extends ITextRange {

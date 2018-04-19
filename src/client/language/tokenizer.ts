@@ -133,6 +133,9 @@ export class Tokenizer implements ITokenizer {
             case Char.Colon:
                 this.tokens.push(new Token(TokenType.Colon, this.cs.position, 1));
                 break;
+            case Char.LineFeed:
+                this.tokens.push(new Token(TokenType.Newline, this.cs.position, 1));
+                break;
             case Char.At:
             case Char.Period:
                 this.tokens.push(new Token(TokenType.Operator, this.cs.position, 1));

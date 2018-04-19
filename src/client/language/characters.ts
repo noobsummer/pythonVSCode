@@ -76,7 +76,7 @@ export function isIdentifierChar(ch: number) {
 }
 
 export function isWhiteSpace(ch: number): boolean {
-    return ch <= Char.Space || ch === 0x200B; // Unicode whitespace
+    return ch !== Char.LineFeed && (ch <= Char.Space || ch === 0x200B); // Unicode whitespace
 }
 
 export function isLineBreak(ch: number): boolean {

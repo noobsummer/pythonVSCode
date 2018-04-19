@@ -7,8 +7,13 @@ import { TextRangeCollection } from '../../client/language/textRangeCollection';
 import { Tokenizer } from '../../client/language/tokenizer';
 import { TokenType } from '../../client/language/types';
 
+
+import * as one from '../../client/language/one';
+
+
 // tslint:disable-next-line:max-func-body-length
 suite('Language.Tokenizer', () => {
+    one.doSomething();
     test('Empty', async () => {
         const t = new Tokenizer();
         const tokens = t.tokenize('');
@@ -120,23 +125,25 @@ suite('Language.Tokenizer', () => {
         const t = new Tokenizer();
         // tslint:disable-next-line:quotemark
         const tokens = t.tokenize("'quoted\\'\nx");
-        assert.equal(tokens.count, 2);
+        assert.equal(tokens.count, 3);
         assert.equal(tokens.getItemAt(0).type, TokenType.String);
         assert.equal(tokens.getItemAt(0).length, 9);
-        assert.equal(tokens.getItemAt(1).type, TokenType.Identifier);
+        assert.equal(tokens.getItemAt(1).type, TokenType.Newline);
+        assert.equal(tokens.getItemAt(2).type, TokenType.Identifier);
     });
     test('Strings: escape at the end of double quoted string ', async () => {
         const t = new Tokenizer();
         const tokens = t.tokenize('"quoted\\"\nx');
-        assert.equal(tokens.count, 2);
+        assert.equal(tokens.count, 3);
         assert.equal(tokens.getItemAt(0).type, TokenType.String);
         assert.equal(tokens.getItemAt(0).length, 9);
-        assert.equal(tokens.getItemAt(1).type, TokenType.Identifier);
+        assert.equal(tokens.getItemAt(1).type, TokenType.Newline);
+        assert.equal(tokens.getItemAt(2).type, TokenType.Identifier);
     });
     test('Comments', async () => {
         const t = new Tokenizer();
         const tokens = t.tokenize(' #co"""mment1\n\t\n#comm\'ent2 ');
-        assert.equal(tokens.count, 2);
+        assert.equal(tokens.count, 4);
 
         const ranges = [1, 12, 15, 11];
         for (let i = 0; i < ranges.length / 2; i += 2) {

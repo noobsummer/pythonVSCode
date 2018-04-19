@@ -7,7 +7,7 @@ import * as assert from 'assert';
 import Char from 'typescript-char';
 import { CharacterStream } from '../../client/language/characterStream';
 import { TextIterator } from '../../client/language/textIterator';
-import { ICharacterStream, TextRange } from '../../client/language/types';
+import { ICharacterStream } from '../../client/language/types';
 
 // tslint:disable-next-line:max-func-body-length
 suite('Language.CharacterStream', () => {
@@ -52,7 +52,7 @@ suite('Language.CharacterStream', () => {
 
             const ch = content.charCodeAt(i);
             const isLineBreak = ch === Char.LineFeed || ch === Char.CarriageReturn;
-            assert.equal(cs.isAtWhiteSpace(), ch === Char.Tab || ch === Char.Space || isLineBreak);
+            assert.equal(cs.isAtWhiteSpace(), ch === Char.Tab || ch === Char.Space || ch === Char.CarriageReturn);
             assert.equal(cs.isAtLineBreak(), isLineBreak);
             assert.equal(cs.isAtString(), ch === Char.SingleQuote || ch === Char.DoubleQuote);
 
