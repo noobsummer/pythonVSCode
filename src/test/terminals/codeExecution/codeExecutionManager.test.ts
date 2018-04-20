@@ -218,7 +218,7 @@ suite('Terminal - Code Execution Manager', () => {
         const helper = TypeMoq.Mock.ofType<ICodeExecutionHelper>();
         serviceContainer.setup(s => s.get(TypeMoq.It.isValue(ICodeExecutionHelper))).returns(() => helper.object);
         helper.setup(h => h.getSelectedTextToExecute).returns(() => () => Promise.resolve(textSelected));
-        helper.setup(h => h.normalizeLines).returns(() => () => textSelected).verifiable(TypeMoq.Times.once());
+        helper.setup(h => h.normalizeLines).returns(() => () => Promise.resolve(textSelected)).verifiable(TypeMoq.Times.once());
         const executionService = TypeMoq.Mock.ofType<ICodeExecutionService>();
         serviceContainer.setup(s => s.get(TypeMoq.It.isValue(ICodeExecutionService), TypeMoq.It.isValue(executionServiceId))).returns(() => executionService.object);
         const document = TypeMoq.Mock.ofType<TextDocument>();

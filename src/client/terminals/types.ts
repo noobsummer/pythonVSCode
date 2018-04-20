@@ -14,7 +14,7 @@ export interface ICodeExecutionService {
 export const ICodeExecutionHelper = Symbol('ICodeExecutionHelper');
 
 export interface ICodeExecutionHelper {
-    normalizeLines(code: string): string;
+    normalizeLines(code: string): Promise<string>;
     getFileToExecute(): Promise<Uri | undefined>;
     saveFileIfDirty(file: Uri): Promise<void>;
     getSelectedTextToExecute(textEditor: TextEditor): Promise<string | undefined>;

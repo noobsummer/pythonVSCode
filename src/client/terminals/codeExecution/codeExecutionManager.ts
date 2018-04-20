@@ -60,7 +60,7 @@ export class CodeExecutionManager implements ICodeExecutionManager {
         }
         const codeExecutionHelper = this.serviceContainer.get<ICodeExecutionHelper>(ICodeExecutionHelper);
         const codeToExecute = await codeExecutionHelper.getSelectedTextToExecute(activeEditor!);
-        const normalizedCode = codeExecutionHelper.normalizeLines(codeToExecute!);
+        const normalizedCode = await codeExecutionHelper.normalizeLines(codeToExecute!);
         if (!normalizedCode || normalizedCode.trim().length === 0) {
             return;
         }
