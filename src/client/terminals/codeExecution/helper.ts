@@ -2,11 +2,8 @@
 // Licensed under the MIT License.
 
 import { inject, injectable } from 'inversify';
-import * as _ from 'lodash';
-import { EOL } from 'os';
 import * as path from 'path';
 import { Range, TextEditor, Uri } from 'vscode';
-import { RegistrationRequest } from 'vscode-languageclient/lib/main';
 import { IApplicationShell, IDocumentManager } from '../../common/application/types';
 import { EXTENSION_ROOT_DIR, PythonLanguage } from '../../common/constants';
 import '../../common/extensions';
@@ -23,7 +20,7 @@ export class CodeExecutionHelper implements ICodeExecutionHelper {
     private readonly envVariablesProvider: IEnvironmentVariablesProvider;
     private readonly processService: IProcessService;
     private readonly configurationService: IConfigurationService;
-    constructor(@inject(IServiceContainer) private serviceContainer: IServiceContainer) {
+    constructor(@inject(IServiceContainer) serviceContainer: IServiceContainer) {
         this.documentManager = serviceContainer.get<IDocumentManager>(IDocumentManager);
         this.applicationShell = serviceContainer.get<IApplicationShell>(IApplicationShell);
         this.envVariablesProvider = serviceContainer.get<IEnvironmentVariablesProvider>(IEnvironmentVariablesProvider);
@@ -37,7 +34,7 @@ export class CodeExecutionHelper implements ICodeExecutionHelper {
             }
             const env = await this.envVariablesProvider.getEnvironmentVariables(resource);
             const pythonPath = this.configurationService.getSettings(resource).pythonPath;
-            const args = [path.join(EXTENSION_ROOT_DIR, 'pythonFiles', 'listNewLinesAndDedents.py'), code];
+            const args = [path.join(EXTENSION_ROOT_DIR, 'pythonFiles', 'normalizeForInterpreter.py'), code];
             const proc = await this.processService.exec(pythonPath, args, { env, throwOnStdErr: true });
             return proc.stdout;
         } catch (ex) {
