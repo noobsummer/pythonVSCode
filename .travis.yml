@@ -65,7 +65,7 @@ script:
         bash <(curl -s https://codecov.io/bash);
     fi
   - yarn run clean:ptvsd
-  - pip install -t ./pythonFiles/experimental/ptvsd ptvsd --pre;
+  - pip install -t ./pythonFiles/experimental/ptvsd ptvsd --pre --no-cache-dir;
   - if [ $DEBUGGER_TEST_RELEASE == "true" ]; then
         yarn run clean;
         yarn run vscode:prepublish;

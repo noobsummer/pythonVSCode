@@ -74,7 +74,7 @@ test_script:
   - if [%DEBUGGER_TEST%]==[true] (
       yarn run testDebugger --silent)
   - yarn run clean:ptvsd
-  - pip install -t ./pythonFiles/experimental/ptvsd ptvsd --pre
+  - pip install -t ./pythonFiles/experimental/ptvsd ptvsd --pre --no-cache-dir
   - if [%DEBUGGER_TEST_RELEASE%]==[true] (
       yarn run testDebugger --silent)
   - if [%SINGLE_WORKSPACE_TEST%]==[true] (
