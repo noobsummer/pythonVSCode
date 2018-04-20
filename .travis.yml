@@ -37,7 +37,10 @@ before_install: |
   export TRAVIS_PYTHON_PATH=`which python`
 install:
   - python -m pip install --upgrade -r requirements.txt
-  - python -m pip install -t ./pythonFiles/experimental/ptvsd git+https://github.com/Microsoft/ptvsd/
+  - git clone https://github.com/Microsoft/ptvsd ./pythonFiles/experimental/ptvsd
+  - cd ./pythonFiles/experimental/ptvsd
+  - git checkout tags/v4.1.1a1
+  - cd ../../..
   - yarn --frozen-lockfile
 
 script:
