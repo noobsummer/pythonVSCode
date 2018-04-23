@@ -11,8 +11,14 @@ else:
     print('more than 2')
 
 print('hello')
+
 # Sample block 3
 for i in range(5):
+    print(i)
+
+    print(i)
+    print(i)
+    
     print(i)
 
 print('complete')

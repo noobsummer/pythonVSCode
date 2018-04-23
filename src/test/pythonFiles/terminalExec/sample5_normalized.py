@@ -5,5 +5,4 @@ for i in range(10):
         print('b2')
         for k in range(2):
             print('c')
-    
     print('done with first loop')
