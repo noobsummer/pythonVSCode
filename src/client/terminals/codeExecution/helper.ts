@@ -22,11 +22,8 @@ export class CodeExecutionHelper implements ICodeExecutionHelper {
             if (code.trim().length === 0) {
                 return '';
             }
-            const regex = /(\n)([ \t]*\n)([ \t]+\S+)/gm;
+            const regex = /(\n)([ \t]*\r?\n)([ \t]+\S+)/gm;
             return code.replace(regex, (_, a, b, c) => {
-                // console.log('found');
-                // console.log(match);
-                // console.log(`${a}${c}`);
                 return `${a}${c}`;
             });
         } catch (ex) {
