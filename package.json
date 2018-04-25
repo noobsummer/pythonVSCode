@@ -97,7 +97,8 @@
         "keybindings":[
             {
                 "command": "python.execSelectionInTerminal",
-                "key": "ctrl+enter"
+                "key": "ctrl+enter",
+                "when": "editorTextFocus & editorHasSelection && editorLangId == python"    
             }
         ],
         "commands": [
@@ -240,12 +241,12 @@
                 {
                     "command": "python.execSelectionInTerminal",
                     "group": "Python",
-                    "when": "editorHasSelection && editorLangId == python"
+                    "when": "editorTextFocus & editorHasSelection && editorLangId == python"
                 },
                 {
                     "command": "python.execSelectionInDjangoShell",
                     "group": "Python",
-                    "when": "editorHasSelection && editorLangId == python && python.isDjangoProject"
+                    "when": "editorTextFocus & editorHasSelection && editorLangId == python && python.isDjangoProject"
                 },
                 {
                     "when": "resourceLangId == python",
