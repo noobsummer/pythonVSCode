@@ -241,12 +241,12 @@
                 {
                     "command": "python.execSelectionInTerminal",
                     "group": "Python",
-                    "when": "editorTextFocus & editorHasSelection && editorLangId == python"
+                    "when": "editorHasSelection && editorLangId == python"
                 },
                 {
                     "command": "python.execSelectionInDjangoShell",
                     "group": "Python",
-                    "when": "editorTextFocus & editorHasSelection && editorLangId == python && python.isDjangoProject"
+                    "when": "editorHasSelection && editorLangId == python && python.isDjangoProject"
                 },
                 {
                     "when": "resourceLangId == python",
