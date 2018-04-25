@@ -98,7 +98,7 @@
             {
                 "command": "python.execSelectionInTerminal",
                 "key": "ctrl+enter",
-                "when": "editorTextFocus & editorHasSelection && editorLangId == python"    
+                "when": "editorFocus && editorHasSelection && editorLangId == python"    
             }
         ],
         "commands": [
