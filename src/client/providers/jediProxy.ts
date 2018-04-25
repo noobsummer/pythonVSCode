@@ -309,7 +309,7 @@ export class JediProxy implements Disposable {
         }
         this.languageServerStarted = createDeferred<void>();
         const pythonProcess = await this.serviceContainer.get<IPythonExecutionFactory>(IPythonExecutionFactory).create(Uri.file(this.workspacePath));
-        // Check if the python path is valid
+        // Check if the python path is valid.
         if ((await pythonProcess.getExecutablePath().catch(() => '')).length === 0) {
             return;
         }
