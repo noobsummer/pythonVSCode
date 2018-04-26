@@ -233,7 +233,7 @@ export class JediProxy implements Disposable {
         }
 
         await this.checkJediMemoryFootprintImpl();
-        setTimeout(() => this.checkJediMemoryFootprint(), 5 * 1000);
+        setTimeout(() => this.checkJediMemoryFootprint(), 15 * 1000);
     }
     private async checkJediMemoryFootprintImpl(): Promise<void> {
         if (!this.proc || this.proc.killed) {
@@ -249,9 +249,9 @@ export class JediProxy implements Disposable {
         pidusage.stat(this.proc.pid, async (err, result) => {
             if (err) {
                 this.pidUsageFailures.counter += 1;
-                // If this function fails 5 times in the last 60 seconds, lets not try ever again.
+                // If this function fails 2 times in the last 60 seconds, lets not try ever again.
                 if (this.pidUsageFailures.timer.elapsedTime > 60 * 1000) {
-                    this.ignoreJediMemoryFootprint = this.pidUsageFailures.counter > 5;
+                    this.ignoreJediMemoryFootprint = this.pidUsageFailures.counter > 2;
                     this.pidUsageFailures.counter = 0;
                     this.pidUsageFailures.timer.reset();
                 }
