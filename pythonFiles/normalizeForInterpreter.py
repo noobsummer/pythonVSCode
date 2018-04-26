@@ -104,8 +104,4 @@ if __name__ == '__main__':
     contents = sys.argv[1]
     if isinstance(contents, bytes):
         contents = contents.decode('utf8')
-    # contents = open('/Users/donjayamanne/.vscode-insiders/extensions/pythonVSCode/src/test/pythonFiles/terminalExec/sample6_raw.py', 'r').read()
-    # sys.stdout.write('contents\n')
-    # sys.stdout.write(contents)
-    # sys.stdout.write('contents')
     normalize_lines(contents)
