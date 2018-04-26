@@ -137,7 +137,7 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerOnTypeFormattingEditProvider(PYTHON, new BlockFormatProviders(), ':'));
     context.subscriptions.push(languages.registerOnTypeFormattingEditProvider(PYTHON, new OnEnterFormatter(), '\n'));
     context.subscriptions.push(languages.registerFoldingProvider(PYTHON, new DocStringFoldingProvider()));
-    
+
     const persistentStateFactory = serviceManager.get<IPersistentStateFactory>(IPersistentStateFactory);
     const deprecationMgr = new FeatureDeprecationManager(persistentStateFactory, !!jupyterExtension);
     deprecationMgr.initialize();
