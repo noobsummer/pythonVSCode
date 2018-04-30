@@ -1,5 +1,6 @@
 import ast
 import io
+import operator
 import os
 import sys
 import token
@@ -98,7 +99,7 @@ def normalize_lines(source):
 
     global_statement_ranges = _get_global_statement_blocks(source, lines)
 
-    for line_number in (filter(lambda x: x > 1, map(operator.itemgetter(0), reversed(global_statement_ranges))):
+    for line_number in filter(lambda x: x > 1, map(operator.itemgetter(0), reversed(global_statement_ranges))):
         lines.insert(line_number-1, '')
 
     sys.stdout.write(os.linesep.join(lines) + (os.linesep if has_blank_lines else ''))
