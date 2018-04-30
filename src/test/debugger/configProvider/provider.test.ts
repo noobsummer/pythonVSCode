@@ -288,7 +288,7 @@ import { IServiceContainer } from '../../../client/ioc/types';
             const workspaceFolder = createMoqWorkspaceFolder(__dirname);
             const pythonFile = 'xyz.py';
             setupIoc(pythonPath);
-            setupActiveEditor(pythonFile, PythonLanguage.language);
+            setupActiveEditor(pythonFile, PYTHON_LANGUAGE);
 
             const debugConfig = await debugProvider.resolveDebugConfiguration!(workspaceFolder, { redirectOutput: false } as PythonLaunchDebugConfiguration<LaunchRequestArguments>);
 
