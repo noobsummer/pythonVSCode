@@ -6,6 +6,9 @@
 import { expect } from 'chai';
 import { Container } from 'inversify';
 import * as TypeMoq from 'typemoq';
+import { FileSystem } from '../../client/common/platform/fileSystem';
+import { PlatformService } from '../../client/common/platform/platformService';
+import { IFileSystem, IPlatformService } from '../../client/common/platform/types';
 import { BufferDecoder } from '../../client/common/process/decoder';
 import { ProcessService } from '../../client/common/process/proc';
 import { IBufferDecoder, IProcessService, IProcessServiceFactory } from '../../client/common/process/types';
@@ -33,6 +36,8 @@ suite('Virtual environment manager', () => {
     processServiceFactory.setup(f => f.create(TypeMoq.It.isAny())).returns(() => Promise.resolve(new ProcessService(new BufferDecoder(), process.env as any)));
     serviceManager.addSingletonInstance<IProcessServiceFactory>(IProcessServiceFactory, processServiceFactory.object);
     serviceManager.addSingleton<IBufferDecoder>(IBufferDecoder, BufferDecoder);
+    serviceManager.addSingleton<IFileSystem>(IFileSystem, FileSystem);
+    serviceManager.addSingleton<IPlatformService>(IFileSystem, PlatformService);
     const venvManager = new VirtualEnvironmentManager(serviceContainer);
     const name = await venvManager.getEnvironmentName(PYTHON_PATH);
     const result = name === '' || name === 'venv' || name === 'virtualenv';
