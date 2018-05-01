@@ -11,6 +11,7 @@ import * as TypeMoq from 'typemoq';
 import { Range, Selection, TextDocument, TextEditor, TextLine, Uri } from 'vscode';
 import { IApplicationShell, IDocumentManager } from '../../../client/common/application/types';
 import { EXTENSION_ROOT_DIR, PYTHON_LANGUAGE } from '../../../client/common/constants';
+import '../../../client/common/extensions';
 import { BufferDecoder } from '../../../client/common/process/decoder';
 import { ProcessService } from '../../../client/common/process/proc';
 import { IProcessService } from '../../../client/common/process/types';
@@ -54,13 +55,15 @@ suite('Terminal - Code Execution Helper', () => {
         editor = TypeMoq.Mock.ofType<TextEditor>();
         editor.setup(e => e.document).returns(() => document.object);
     });
-
     async function ensureBlankLinesAreRemoved(source: string, expectedSource: string) {
         const actualProcessService = new ProcessService(new BufferDecoder());
         processService.setup(p => p.exec(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
             .returns((file, args, options) => {
                 return actualProcessService.exec.apply(actualProcessService, [file, args, options]);
             });
+        // Ensure we have OS line seps.
+        source = source.splitLines().join(EOL);
+        expectedSource = expectedSource.splitLines().join(EOL);
         const normalizedZCode = await helper.normalizeLines(source);
         expect(normalizedZCode).to.be.equal(expectedSource);
     }
