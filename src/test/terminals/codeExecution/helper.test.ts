@@ -64,7 +64,7 @@ suite('Terminal - Code Execution Helper', () => {
             });
         const normalizedZCode = await helper.normalizeLines(source);
         // In case file has been saved with different line endings.
-        expectedSource = expectedSource.splitLines().join(EOL) + EOL;
+        expectedSource = expectedSource.splitLines({ removeEmptyEntries: false, trim: false }).join(EOL);
         expect(normalizedZCode).to.be.equal(expectedSource);
     }
     test('Ensure blank lines are NOT removed when code is not indented (simple)', async () => {
