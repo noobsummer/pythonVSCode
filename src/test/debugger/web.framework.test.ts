@@ -6,6 +6,7 @@
 // tslint:disable:no-suspicious-comment max-func-body-length no-invalid-this no-var-requires no-require-imports no-any no-http-string no-string-literal no-console
 
 import { expect } from 'chai';
+import * as fs from 'fs-extra';
 import * as getFreePort from 'get-port';
 import * as path from 'path';
 import { DebugClient } from 'vscode-debugadapter-testsupport';
@@ -30,6 +31,10 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
         debugClient = await createDebugAdapter(coverageDirectory);
     });
     teardown(async () => {
+        const logFile = path.join(EXTENSION_ROOT_DIR, 'experimental_debug.log');
+        if (fs.existsSync(logFile)) {
+            console.log(fs.readFileSync(logFile).toString());
+        }
         // Wait for a second before starting another test (sometimes, sockets take a while to get closed).
         await sleep(1000);
         try {
@@ -52,7 +57,7 @@ suite(`Django and Flask Debugging: ${debuggerType}`, () => {
             args: [],
             env,
             envFile: '',
-            logToFile: false,
+            logToFile: true,
             type: debuggerType
         };
 
