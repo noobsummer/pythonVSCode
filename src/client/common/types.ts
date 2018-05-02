@@ -110,7 +110,6 @@ export interface IPythonSettings {
     readonly sortImports?: ISortImportSettings;
     readonly workspaceSymbols?: IWorkspaceSymbolSettings;
     readonly envFile: string;
-    readonly disablePromptForFeatures: string[];
     readonly disableInstallationChecks: boolean;
     readonly globalModuleInstallation: boolean;
 }
