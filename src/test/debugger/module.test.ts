@@ -36,8 +36,6 @@ suite(`Module Debugging - Misc tests: ${debuggerType}`, () => {
         await sleep(1000);
     });
     function buildLaunchArgs(): LaunchRequestArguments {
-        const env = { PYTHONPATH: PTVSD_PATH };
-
         // tslint:disable-next-line:no-unnecessary-local-variable
         const options: LaunchRequestArguments = {
             module: 'mymod',
@@ -46,7 +44,7 @@ suite(`Module Debugging - Misc tests: ${debuggerType}`, () => {
             debugOptions: [DebugOptions.RedirectOutput],
             pythonPath: PYTHON_PATH,
             args: [],
-            env,
+            env: { PYTHONPATH: `${PTVSD_PATH}` },
             envFile: '',
             logToFile: false,
             type: debuggerType
