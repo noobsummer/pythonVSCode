@@ -39,7 +39,7 @@ export class PythonSettings extends EventEmitter implements IPythonSettings {
     public unitTest?: IUnitTestSettings;
     public terminal!: ITerminalSettings;
     public sortImports?: ISortImportSettings;
-    public workspaceSymbols?: IWorkspaceSymbolSettings;
+    public workspaceSymbols!: IWorkspaceSymbolSettings;
     public disableInstallationChecks = false;
     public globalModuleInstallation = false;
 

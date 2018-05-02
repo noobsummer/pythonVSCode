@@ -108,7 +108,7 @@ export interface IPythonSettings {
     readonly autoComplete?: IAutoCompleteSettings;
     readonly terminal: ITerminalSettings;
     readonly sortImports?: ISortImportSettings;
-    readonly workspaceSymbols?: IWorkspaceSymbolSettings;
+    readonly workspaceSymbols: IWorkspaceSymbolSettings;
     readonly envFile: string;
     readonly disablePromptForFeatures: string[];
     readonly disableInstallationChecks: boolean;
