@@ -94,7 +94,7 @@
                 "path": "./snippets/python.json"
             }
         ],
-        "keybindings":[
+        "keybindings": [
             {
                 "command": "python.execSelectionInTerminal",
                 "key": "ctrl+enter",
@@ -747,7 +747,8 @@
                 "enableBreakpointsFor": {
                     "languageIds": [
                         "python",
-                        "html"
+                        "html",
+                        "jinja"
                     ]
                 },
                 "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
@@ -1757,7 +1758,6 @@
                     "description": "Whether to re-build the tags file on start (defaults to true).",
                     "scope": "resource"
                 },
-
                 "python.workspaceSymbols.tagFilePath": {
                     "type": "string",
                     "default": "${workspaceFolder}/.vscode/tags",
@@ -1789,6 +1789,16 @@
                 "id": "yaml",
                 "filenames": [
                     ".condarc"
+                ]
+            },
+            {
+                "id": "jinja",
+                "extensions": [
+                    ".jinja2",
+                    ".j2"
+                ],
+                "aliases": [
+                    "Jinja"
                 ]
             }
         ],
