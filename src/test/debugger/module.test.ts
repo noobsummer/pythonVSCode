@@ -38,7 +38,7 @@ suite(`Module Debugging - Misc tests: ${debuggerType}`, () => {
     function buildLauncArgs(): LaunchRequestArguments {
         const env = {};
         // tslint:disable-next-line:no-string-literal
-        env['PYTHONPATH'] = `.${path.delimiter}${PTVSD_PATH}`;
+        env['PYTHONPATH'] = PTVSD_PATH;
 
         // tslint:disable-next-line:no-unnecessary-local-variable
         const options: LaunchRequestArguments = {
