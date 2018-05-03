@@ -322,7 +322,7 @@ def main():
         result = runner.run(tests)
         if _channel is not None:
             _channel.close()
-        sys.exit(0 if result.wasSuccessful() else 1)
+        sys.exit(not result.wasSuccessful())
     finally:
         if cov is not None:
             cov.stop()
