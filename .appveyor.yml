@@ -41,12 +41,6 @@ matrix:
       PYTHON_ARCH: "32"
       nodejs_version: "8.9.1"
       APPVEYOR: "true"
-      DEBUGGER_TEST: "true"
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6.3"
-      PYTHON_ARCH: "32"
-      nodejs_version: "8.9.1"
-      APPVEYOR: "true"
       DEBUGGER_TEST_RELEASE: "true"
 
 init:
