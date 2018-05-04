@@ -3,15 +3,14 @@
 
 'use strict';
 
-import { CancellationToken, FoldingProvider, FoldingRange, FoldingRangeList, Range, TextDocument } from 'vscode';
+import { CancellationToken, FoldingContext, FoldingRange, FoldingRangeKind, FoldingRangeProvider, ProviderResult, Range, TextDocument } from 'vscode';
 import { IterableTextRange } from '../language/iterableTextRange';
 import { IToken, TokenizerMode, TokenType } from '../language/types';
 import { getDocumentTokens } from './providerUtilities';
 
-export class DocStringFoldingProvider implements FoldingProvider {
-    public provideFoldingRanges(document: TextDocument, _: CancellationToken): FoldingRangeList {
-        const ranges = this.getFoldingRanges(document);
-        return new FoldingRangeList(ranges);
+export class DocStringFoldingProvider implements FoldingRangeProvider {
+    public provideFoldingRanges(document: TextDocument, _context: FoldingContext, token: CancellationToken): ProviderResult<FoldingRange[]> {
+        return this.getFoldingRanges(document);
     }
 
     private getFoldingRanges(document: TextDocument) {
@@ -43,11 +42,11 @@ export class DocStringFoldingProvider implements FoldingProvider {
             return;
         }
         const previousComment = commentRanges[commentRanges.length - 1];
-        if (previousComment.endLine + 1 === commentRange.startLine) {
-            previousComment.endLine = commentRange.endLine;
+        if (previousComment.end + 1 === commentRange.start) {
+            previousComment.end = commentRange.end;
             return;
         }
-        if (previousComment.startLine === previousComment.endLine) {
+        if (previousComment.start === previousComment.end) {
             commentRanges[commentRanges.length - 1] = commentRange;
             return;
         }
@@ -59,7 +58,7 @@ export class DocStringFoldingProvider implements FoldingProvider {
             return;
         }
         const lastComment = commentRanges[commentRanges.length - 1];
-        if (lastComment.startLine === lastComment.endLine) {
+        if (lastComment.start === lastComment.end) {
             commentRanges.pop();
         }
     }
@@ -86,7 +85,7 @@ export class DocStringFoldingProvider implements FoldingProvider {
 
         const range = new Range(startPosition, endPosition);
 
-        return new FoldingRange(range.start.line, range.end.line, 'docstring');
+        return new FoldingRange(range.start.line, range.end.line);
     }
     private getSingleLineCommentRange(document: TextDocument, token: IToken) {
         if (token.type !== TokenType.Comment) {
@@ -103,6 +102,6 @@ export class DocStringFoldingProvider implements FoldingProvider {
         }
 
         const range = new Range(startPosition, endPosition);
-        return new FoldingRange(range.start.line, range.end.line, 'comment');
+        return new FoldingRange(range.start.line, range.end.line, FoldingRangeKind.Comment);
     }
 }
