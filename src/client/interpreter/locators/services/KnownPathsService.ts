@@ -30,7 +30,7 @@ export class KnownPathsService extends CacheableLocatorService {
             .then(listOfInterpreters => _.flatten(listOfInterpreters))
             .then(interpreters => interpreters.filter(item => item.length > 0))
             .then(interpreters => Promise.all(interpreters.map(interpreter => this.getInterpreterDetails(interpreter))))
-            .then(interpreters => interpreters.filter(interpreter => !interpreter).map(interpreter => interpreter!));
+            .then(interpreters => interpreters.filter(interpreter => !!interpreter).map(interpreter => interpreter!));
     }
     private async getInterpreterDetails(interpreter: string) {
         const details = await this.helper.getInterpreterInformation(interpreter);

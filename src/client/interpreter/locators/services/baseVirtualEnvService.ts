@@ -40,7 +40,7 @@ export class BaseVirtualEnvService extends CacheableLocatorService {
             .then(dirs => Promise.all(dirs.map(lookForInterpretersInDirectory)))
             .then(pathsWithInterpreters => _.flatten(pathsWithInterpreters))
             .then(interpreters => Promise.all(interpreters.map(interpreter => this.getVirtualEnvDetails(interpreter))))
-            .then(interpreters => interpreters.filter(interpreter => !interpreter).map(interpreter => interpreter!))
+            .then(interpreters => interpreters.filter(interpreter => !!interpreter).map(interpreter => interpreter!))
             .catch((err) => {
                 console.error('Python Extension (lookForInterpretersInVenvs):', err);
                 // Ignore exceptions.
@@ -65,7 +65,7 @@ export class BaseVirtualEnvService extends CacheableLocatorService {
                     return '';
                 }));
     }
-    private async getVirtualEnvDetails(interpreter: string): Promise<PythonInterpreter> {
+    private async getVirtualEnvDetails(interpreter: string): Promise<PythonInterpreter | undefined> {
         return Promise.all([
             this.helper.getInterpreterInformation(interpreter),
             this.virtualEnvMgr.getEnvironmentName(interpreter),
