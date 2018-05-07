@@ -467,7 +467,7 @@ let testCounter = 0;
             await Promise.all([
                 debugClient.configurationSequence(),
                 setBreakpointFilter(),
-                debugClient.launch(buildLauncArgs('sampleWithAssertEx.py', false)),
+                debugClient.launch(buildLaunchArgs('sampleWithAssertEx.py', false)),
                 waitToStopDueToException(),
                 debugClient.assertStoppedLocation('exception', pauseLocation)
             ]);
@@ -616,7 +616,6 @@ let testCounter = 0;
             if (debuggerType !== 'pythonExperimental') {
                 return this.skip();
             }
-            this.retries(0);
             const breakpointLocation = { path: path.join(debugFilesPath, 'logMessage.py'), line: 4 };
             const breakpointArgs: DebugProtocol.SetBreakpointsArguments = {
                 lines: [breakpointLocation.line],
