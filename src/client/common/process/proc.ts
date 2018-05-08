@@ -79,7 +79,8 @@ export class ProcessService implements IProcessService {
         delete options.encoding;
         const spawnOptions = { ...options };
         if (!spawnOptions.env || Object.keys(spawnOptions).length === 0) {
-            spawnOptions.env = { ...process.env };
+            const env = this.env ? this.env : process.env;
+            spawnOptions.env = { ...env };
         }
 
         // Always ensure we have unbuffered output.

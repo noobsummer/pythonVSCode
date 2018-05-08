@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+// tslint:disable:max-func-body-length no-any
+
 import { expect } from 'chai';
 import * as TypeMoq from 'typemoq';
 import { Uri } from 'vscode';
@@ -11,7 +13,6 @@ import { IEnvironmentVariablesProvider } from '../../../client/common/variables/
 import { InterpreterVersionService } from '../../../client/interpreter/interpreterVersion';
 import { IServiceContainer } from '../../../client/ioc/types';
 
-// tslint:disable-next-line:max-func-body-length
 suite('PythonExecutableService', () => {
     let serviceContainer: TypeMoq.IMock<IServiceContainer>;
     let configService: TypeMoq.IMock<IConfigurationService>;
@@ -29,6 +30,7 @@ suite('PythonExecutableService', () => {
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IEnvironmentVariablesProvider))).returns(() => envVarsProvider.object);
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IProcessServiceFactory))).returns(() => procServiceFactory.object);
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IConfigurationService))).returns(() => configService.object);
+        procService.setup((x: any) => x.then).returns(() => undefined);
         procServiceFactory.setup(p => p.create(TypeMoq.It.isAny())).returns(() => Promise.resolve(procService.object));
         envVarsProvider.setup(v => v.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({}));
 
