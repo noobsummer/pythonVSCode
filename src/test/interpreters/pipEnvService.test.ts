@@ -50,6 +50,7 @@ suite('Interpreters - PipEnv', () => {
                 persistentStateFactory = TypeMoq.Mock.ofType<IPersistentStateFactory>();
                 envVarsProvider = TypeMoq.Mock.ofType<IEnvironmentVariablesProvider>();
                 procServiceFactory = TypeMoq.Mock.ofType<IProcessServiceFactory>();
+                processService.setup((x: any) => x.then).returns(() => undefined);
                 procServiceFactory.setup(p => p.create(TypeMoq.It.isAny())).returns(() => Promise.resolve(processService.object));
 
                 // tslint:disable-next-line:no-any

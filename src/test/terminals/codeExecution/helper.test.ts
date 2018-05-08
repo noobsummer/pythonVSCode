@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-// tslint:disable:no-multiline-string no-trailing-whitespace
+// tslint:disable:no-multiline-string no-trailing-whitespace max-func-body-length no-any
 
 import { expect } from 'chai';
 import * as fs from 'fs-extra';
@@ -24,7 +24,6 @@ import { PYTHON_PATH } from '../../common';
 
 const TEST_FILES_PATH = path.join(EXTENSION_ROOT_DIR, 'src', 'test', 'pythonFiles', 'terminalExec');
 
-// tslint:disable-next-line:max-func-body-length
 suite('Terminal - Code Execution Helper', () => {
     let documentManager: TypeMoq.IMock<IDocumentManager>;
     let applicationShell: TypeMoq.IMock<IApplicationShell>;
@@ -42,12 +41,12 @@ suite('Terminal - Code Execution Helper', () => {
         configService = TypeMoq.Mock.ofType<IConfigurationService>();
         const pythonSettings = TypeMoq.Mock.ofType<IPythonSettings>();
         pythonSettings.setup(p => p.pythonPath).returns(() => PYTHON_PATH);
+        processService.setup((x: any) => x.then).returns(() => undefined);
         configService.setup(c => c.getSettings(TypeMoq.It.isAny())).returns(() => pythonSettings.object);
         envVariablesProvider.setup(e => e.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({}));
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IDocumentManager), TypeMoq.It.isAny())).returns(() => documentManager.object);
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IApplicationShell), TypeMoq.It.isAny())).returns(() => applicationShell.object);
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IEnvironmentVariablesProvider), TypeMoq.It.isAny())).returns(() => envVariablesProvider.object);
-        serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IProcessService), TypeMoq.It.isAny())).returns(() => processService.object);
         serviceContainer.setup(c => c.get(TypeMoq.It.isValue(IConfigurationService), TypeMoq.It.isAny())).returns(() => configService.object);
         helper = new CodeExecutionHelper(serviceContainer.object);
 

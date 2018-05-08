@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+// tslint:disable:no-any
+
 import { expect } from 'chai';
 import { Container } from 'inversify';
 import * as TypeMoq from 'typemoq';
@@ -28,7 +30,6 @@ suite('Virtual environment manager', () => {
 
   test('Run actual virtual env detection code', async () => {
     const processServiceFactory = TypeMoq.Mock.ofType<IProcessServiceFactory>();
-    // tslint:disable-next-line:no-any
     processServiceFactory.setup(f => f.create(TypeMoq.It.isAny())).returns(() => Promise.resolve(new ProcessService(new BufferDecoder(), process.env as any)));
     serviceManager.addSingletonInstance<IProcessServiceFactory>(IProcessServiceFactory, processServiceFactory.object);
     serviceManager.addSingleton<IBufferDecoder>(IBufferDecoder, BufferDecoder);
@@ -41,6 +42,7 @@ suite('Virtual environment manager', () => {
   async function testSuffix(expectedName: string) {
     const processService = TypeMoq.Mock.ofType<IProcessService>();
     const processServiceFactory = TypeMoq.Mock.ofType<IProcessServiceFactory>();
+    processService.setup((x: any) => x.then).returns(() => undefined);
     processServiceFactory.setup(f => f.create(TypeMoq.It.isAny())).returns(() => Promise.resolve(processService.object));
     serviceManager.addSingletonInstance<IProcessServiceFactory>(IProcessServiceFactory, processServiceFactory.object);
 

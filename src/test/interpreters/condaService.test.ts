@@ -1,3 +1,4 @@
+// tslint:disable:no-require-imports no-var-requires no-any max-func-body-length
 import * as assert from 'assert';
 import { expect } from 'chai';
 import { EOL } from 'os';
@@ -12,12 +13,10 @@ import { CondaService, KNOWN_CONDA_LOCATIONS } from '../../client/interpreter/lo
 import { IServiceContainer } from '../../client/ioc/types';
 import { MockState } from './mocks';
 
-// tslint:disable-next-line:no-require-imports no-var-requires
 const untildify: (value: string) => string = require('untildify');
 
 const environmentsPath = path.join(__dirname, '..', '..', '..', 'src', 'test', 'pythonFiles', 'environments');
 
-// tslint:disable-next-line:max-func-body-length
 suite('Interpreters Conda Service', () => {
     let processService: TypeMoq.IMock<IProcessService>;
     let platformService: TypeMoq.IMock<IPlatformService>;
@@ -33,6 +32,7 @@ suite('Interpreters Conda Service', () => {
         registryInterpreterLocatorService = TypeMoq.Mock.ofType<IInterpreterLocatorService>();
         fileSystem = TypeMoq.Mock.ofType<IFileSystem>();
         procServiceFactory = TypeMoq.Mock.ofType<IProcessServiceFactory>();
+        processService.setup((x: any) => x.then).returns(() => undefined);
         procServiceFactory.setup(p => p.create(TypeMoq.It.isAny())).returns(() => Promise.resolve(processService.object));
 
         serviceContainer = TypeMoq.Mock.ofType<IServiceContainer>();
