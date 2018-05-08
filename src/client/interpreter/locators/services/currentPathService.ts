@@ -3,9 +3,8 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import { Uri } from 'vscode';
 import { IFileSystem } from '../../../common/platform/types';
-import { IProcessService } from '../../../common/process/types';
-import { IConfigurationService } from '../../../common/types';
 import { IProcessServiceFactory } from '../../../common/process/types';
+import { IConfigurationService } from '../../../common/types';
 import { IServiceContainer } from '../../../ioc/types';
 import { IInterpreterVersionService, InterpreterType, PythonInterpreter } from '../../contracts';
 import { IVirtualEnvironmentManager } from '../../virtualEnvs/types';
@@ -58,7 +57,12 @@ export class CurrentPathService extends CacheableLocatorService {
             const processService = await this.processServiceFactory.create();
             return processService.exec(pythonPath, ['-c', 'import sys;print(sys.executable)'], {})
                 .then(output => output.stdout.trim())
-                .then(value => value.length === 0 ? defaultValue : value)
+                .then(async value => {
+                    if (value.length > 0 && await this.fs.fileExistsAsync(value)) {
+                        return value;
+                    }
+                    return defaultValue;
+                })
                 .catch(() => defaultValue);    // Ignore exceptions in getting the executable.
         } catch {
             return defaultValue;    // Ignore exceptions in getting the executable.
