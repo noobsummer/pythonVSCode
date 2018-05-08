@@ -1,7 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { IProcessService, IPythonExecutionFactory } from '../../client/common/process/types';
 import { CancellationTokenSource, Position, Uri, window, workspace } from 'vscode';
 import { IProcessServiceFactory, IPythonExecutionFactory } from '../../client/common/process/types';
 import { AutoPep8Formatter } from '../../client/formatters/autoPep8Formatter';
