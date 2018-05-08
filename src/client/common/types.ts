@@ -106,7 +106,7 @@ export interface IPythonSettings {
     readonly linting: ILintingSettings;
     readonly formatting: IFormattingSettings;
     readonly unitTest: IUnitTestSettings;
-    readonly autoComplete: IAutoCompeteSettings;
+    readonly autoComplete: IAutoCompleteSettings;
     readonly terminal: ITerminalSettings;
     readonly sortImports: ISortImportSettings;
     readonly workspaceSymbols: IWorkspaceSymbolSettings;

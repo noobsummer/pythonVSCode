@@ -225,7 +225,7 @@ export class ProductInstaller implements IInstaller {
     private ProductTypes = new Map<Product, ProductType>();
 
     constructor(@inject(IServiceContainer) private serviceContainer: IServiceContainer,
-        @inject(IOutputChannel) @named(STANDARD_OUTPUT_CHANNEL) private outputChannel: OutputChannel) {
+        @inject(IOutputChannel) @named(STANDARD_OUTPUT_CHANNEL) private outputChannel: vscode.OutputChannel) {
         this.ProductTypes.set(Product.flake8, ProductType.Linter);
         this.ProductTypes.set(Product.mypy, ProductType.Linter);
         this.ProductTypes.set(Product.pep8, ProductType.Linter);

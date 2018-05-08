@@ -34,7 +34,7 @@ export class PythonSettings extends EventEmitter implements IPythonSettings {
     public devOptions: string[] = [];
     public linting!: ILintingSettings;
     public formatting!: IFormattingSettings;
-    public autoComplete!: IAutoCompeteSettings;
+    public autoComplete!: IAutoCompleteSettings;
     public unitTest!: IUnitTestSettings;
     public terminal!: ITerminalSettings;
     public sortImports!: ISortImportSettings;
