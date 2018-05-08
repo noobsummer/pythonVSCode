@@ -105,7 +105,6 @@ suite('Interpreters - PipEnv', () => {
             });
             test(`Should display warning message if there is a \'PipFile\' but \'pipenv --venv\' failes with stderr ${testSuffix}`, async () => {
                 const env = {};
-                envVarsProvider.setup(e => e.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({})).verifiable(TypeMoq.Times.once());
                 currentProcess.setup(c => c.env).returns(() => env);
                 processService.setup(p => p.exec(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve({ stderr: 'PipEnv Failed', stdout: '' }));
                 fileSystem.setup(fs => fs.fileExistsAsync(TypeMoq.It.isValue(path.join(rootWorkspace, 'Pipfile')))).returns(() => Promise.resolve(true));
@@ -113,13 +112,11 @@ suite('Interpreters - PipEnv', () => {
                 const environments = await pipEnvService.getInterpreters(resource);
 
                 expect(environments).to.be.deep.equal([]);
-                envVarsProvider.verifyAll();
                 appShell.verifyAll();
             });
             test(`Should return interpreter information${testSuffix}`, async () => {
                 const env = {};
                 const venvDir = 'one';
-                envVarsProvider.setup(e => e.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({})).verifiable(TypeMoq.Times.once());
                 currentProcess.setup(c => c.env).returns(() => env);
                 processService.setup(p => p.exec(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve({ stdout: venvDir }));
                 interpreterVersionService.setup(v => v.getVersion(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve('xyz'));
@@ -129,7 +126,6 @@ suite('Interpreters - PipEnv', () => {
 
                 expect(environments).to.be.lengthOf(1);
                 fileSystem.verifyAll();
-                envVarsProvider.verifyAll();
             });
             test(`Should return interpreter information using PipFile defined in Env variable${testSuffix}`, async () => {
                 const envPipFile = 'XYZ';
@@ -137,7 +133,6 @@ suite('Interpreters - PipEnv', () => {
                     PIPENV_PIPFILE: envPipFile
                 };
                 const venvDir = 'one';
-                envVarsProvider.setup(e => e.getEnvironmentVariables(TypeMoq.It.isAny())).returns(() => Promise.resolve({})).verifiable(TypeMoq.Times.once());
                 currentProcess.setup(c => c.env).returns(() => env);
                 processService.setup(p => p.exec(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve({ stdout: venvDir }));
                 interpreterVersionService.setup(v => v.getVersion(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve('xyz'));
@@ -148,7 +143,6 @@ suite('Interpreters - PipEnv', () => {
 
                 expect(environments).to.be.lengthOf(1);
                 fileSystem.verifyAll();
-                envVarsProvider.verifyAll();
             });
         });
     });
