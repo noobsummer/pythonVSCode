@@ -6,7 +6,7 @@ import * as path from 'path';
 import { Uri } from 'vscode';
 import { IWorkspaceService } from '../../common/application/types';
 import { IFileSystem } from '../../common/platform/types';
-import { IProcessService, IProcessServiceFactory } from '../../common/process/types';
+import { IProcessServiceFactory } from '../../common/process/types';
 import { IServiceContainer } from '../../ioc/types';
 import { InterpreterType, IPipEnvService } from '../contracts';
 import { IVirtualEnvironmentManager } from './types';
@@ -19,7 +19,7 @@ export class VirtualEnvironmentManager implements IVirtualEnvironmentManager {
     private pipEnvService: IPipEnvService;
     private fs: IFileSystem;
     private pyEnvRoot?: string;
-    private workspaceService?: IWorkspaceService;
+    private workspaceService: IWorkspaceService;
     constructor(@inject(IServiceContainer) serviceContainer: IServiceContainer) {
         this.processServiceFactory = serviceContainer.get<IProcessServiceFactory>(IProcessServiceFactory);
         this.fs = serviceContainer.get<IFileSystem>(IFileSystem);
@@ -46,13 +46,13 @@ export class VirtualEnvironmentManager implements IVirtualEnvironmentManager {
         const dir = path.dirname(pythonPath);
         const pyEnvCfgFiles = PYENVFILES.map(file => path.join(dir, file));
         for (const file of pyEnvCfgFiles) {
-            if (await this.fs.fileExistsAsync(file)) {
+            if (await this.fs.fileExists(file)) {
                 return InterpreterType.Venv;
             }
         }
 
         const pyEnvRoot = await this.getPyEnvRoot(resource);
-        if (pythonPath.startsWith(pyEnvRoot)) {
+        if (pyEnvRoot && pythonPath.startsWith(pyEnvRoot)) {
             return InterpreterType.Pyenv;
         }
 
