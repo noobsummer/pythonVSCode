@@ -26,6 +26,7 @@ const istanbul = require('istanbul');
 const glob = require('glob');
 const os = require('os');
 const _ = require('lodash');
+const hasNativeDeps = require('node-has-native-dependencies');
 
 /**
 * Hygiene works by creating cascading subsets of all our files and
@@ -96,6 +97,12 @@ gulp.task('output:clean', () => del(['coverage', 'debug_coverage*']));
 gulp.task('cover:clean', () => del(['coverage', 'debug_coverage*']));
 
 gulp.task('clean:ptvsd', () => del(['coverage', 'pythonFiles/experimental/ptvsd*']));
+
+gulp.task('checkNativeDependencies', () => {
+    if (hasNativeDeps(path.join(__dirname, 'node_modules'))) {
+        throw new Error('Native dependencies deteced');
+    }
+});
 
 gulp.task('cover:enable', () => {
     return gulp.src("./coverconfig.json")
@@ -477,5 +484,10 @@ exports.hygiene = hygiene;
 
 // this allows us to run hygiene as a git pre-commit hook.
 if (require.main === module) {
+    if (hasNativeDeps(path.join(__dirname, 'node_modules'))) {
+        console.log(new Error('Native npm dependencies deteced. Please remove them.'));
+        process.exit(1);
+    }
+    
     run({ exitOnError: true, mode: 'staged' });
 }
