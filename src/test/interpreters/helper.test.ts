@@ -7,7 +7,9 @@ import { expect } from 'chai';
 import * as TypeMoq from 'typemoq';
 import { ConfigurationTarget, TextDocument, TextEditor, Uri } from 'vscode';
 import { IDocumentManager, IWorkspaceService } from '../../client/common/application/types';
+import { InterpreterType, PythonInterpreter } from '../../client/interpreter/contracts';
 import { InterpreterHelper } from '../../client/interpreter/helpers';
+import { fixInterpreterDisplayName } from '../../client/interpreter/locators/helpers';
 import { IServiceContainer } from '../../client/ioc/types';
 
 // tslint:disable-next-line:max-func-body-length
@@ -84,5 +86,22 @@ suite('Interpreters Display Helper', () => {
         expect(workspace).to.be.not.equal(undefined, 'incorrect value');
         expect(workspace!.folderUri).to.be.equal(documentWorkspaceFolderUri);
         expect(workspace!.configTarget).to.be.equal(ConfigurationTarget.WorkspaceFolder);
+    });
+    test('Ensure Python prefix is added to displayName', () => {
+        const interpreter: PythonInterpreter = {
+            path: '',
+            type: InterpreterType.Unknown,
+            version: 'Something'
+        };
+        const expectedDisplayName = `Python ${interpreter.version!}`;
+        expect(fixInterpreterDisplayName(interpreter)).to.have.property('displayName', expectedDisplayName);
+    });
+    test('Ensure Python prefix is not added to displayName', () => {
+        const interpreter: PythonInterpreter = {
+            path: '',
+            type: InterpreterType.Unknown,
+            version: 'Python Something'
+        };
+        expect(fixInterpreterDisplayName(interpreter)).to.have.property('displayName', interpreter.version);
     });
 });
