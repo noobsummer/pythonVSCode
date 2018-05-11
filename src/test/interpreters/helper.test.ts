@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import * as TypeMoq from 'typemoq';
 import { ConfigurationTarget, TextDocument, TextEditor, Uri } from 'vscode';
 import { IDocumentManager, IWorkspaceService } from '../../client/common/application/types';
+import { Architecture } from '../../client/common/platform/types';
 import { InterpreterType, PythonInterpreter } from '../../client/interpreter/contracts';
 import { InterpreterHelper } from '../../client/interpreter/helpers';
 import { fixInterpreterDisplayName } from '../../client/interpreter/locators/helpers';
@@ -91,7 +92,11 @@ suite('Interpreters Display Helper', () => {
         const interpreter: PythonInterpreter = {
             path: '',
             type: InterpreterType.Unknown,
-            version: 'Something'
+            version: 'Something',
+            sysPrefix: '',
+            architecture: Architecture.Unknown,
+            sysVersion: '',
+            version_info: [0, 0, 0, 'alpha']
         };
         const expectedDisplayName = `Python ${interpreter.version!}`;
         expect(fixInterpreterDisplayName(interpreter)).to.have.property('displayName', expectedDisplayName);
@@ -100,7 +105,11 @@ suite('Interpreters Display Helper', () => {
         const interpreter: PythonInterpreter = {
             path: '',
             type: InterpreterType.Unknown,
-            version: 'Python Something'
+            version: 'Python Something',
+            sysPrefix: '',
+            architecture: Architecture.Unknown,
+            sysVersion: '',
+            version_info: [0, 0, 0, 'alpha']
         };
         expect(fixInterpreterDisplayName(interpreter)).to.have.property('displayName', interpreter.version);
     });
