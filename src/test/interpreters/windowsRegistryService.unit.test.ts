@@ -6,15 +6,13 @@ import { IPathUtils, IPersistentStateFactory } from '../../client/common/types';
 import { IInterpreterHelper } from '../../client/interpreter/contracts';
 import { WindowsRegistryService } from '../../client/interpreter/locators/services/windowsRegistryService';
 import { IServiceContainer } from '../../client/ioc/types';
-import { initialize, initializeTest } from '../initialize';
 import { MockRegistry, MockState } from './mocks';
 
 const environmentsPath = path.join(__dirname, '..', '..', '..', 'src', 'test', 'pythonFiles', 'environments');
 
 // tslint:disable-next-line:max-func-body-length
-suite('Interpreters from Windows Registry', () => {
+suite('Interpreters from Windows Registry (unit)', () => {
     let serviceContainer: TypeMoq.IMock<IServiceContainer>;
-    suiteSetup(initialize);
     setup(() => {
         serviceContainer = TypeMoq.Mock.ofType<IServiceContainer>();
         const stateFactory = TypeMoq.Mock.ofType<IPersistentStateFactory>();
@@ -28,7 +26,6 @@ suite('Interpreters from Windows Registry', () => {
         // tslint:disable-next-line:no-empty no-any
         interpreterHelper.setup(h => h.getInterpreterInformation(TypeMoq.It.isAny())).returns(() => Promise.resolve({} as any));
         stateFactory.setup(s => s.createGlobalPersistentState(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => state);
-        return initializeTest();
     });
     test('Must return an empty list (x86)', async () => {
         const registry = new MockRegistry([], []);
