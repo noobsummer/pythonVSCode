@@ -14,12 +14,15 @@ type VSCode = typeof vscode;
 const mockedVSCode: Partial<VSCode> = {};
 
 const originalLoad = Module._load;
-Module._load = function (request, parent) {
-    if (request === 'vscode') {
-        return mockedVSCode;
-    }
-    return originalLoad.apply(this, arguments);
-};
+
+export function initialize() {
+    Module._load = function (request, parent) {
+        if (request === 'vscode') {
+            return mockedVSCode;
+        }
+        return originalLoad.apply(this, arguments);
+    };
+}
 
 export function mock<K extends keyof VSCode>(name: K): TypeMoq.IMock<VSCode[K]> {
     const mockedObj = TypeMoq.Mock.ofType<VSCode[K]>();

@@ -8,13 +8,15 @@
 if ((Reflect as any).metadata === undefined) {
     require('reflect-metadata');
 }
-require('./vscode-mock');
 import * as glob from 'glob';
 import * as Mocha from 'mocha';
 import * as path from 'path';
 import { MochaSetupOptions } from 'vscode/lib/testrunner';
+import * as vscodeMoscks from './vscode-mock';
 
 export function runTests(testOptions?: { grep?: string; timeout?: number }) {
+    vscodeMoscks.initialize();
+
     const grep: string | undefined = testOptions ? testOptions.grep : undefined;
     const timeout: number | undefined = testOptions ? testOptions.timeout : undefined;
     const options: MochaSetupOptions = {
