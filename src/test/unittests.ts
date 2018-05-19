@@ -8,7 +8,6 @@
 if ((Reflect as any).metadata === undefined) {
     require('reflect-metadata');
 }
-require('./vscode-mock');
 import * as glob from 'glob';
 import * as Mocha from 'mocha';
 import * as path from 'path';
