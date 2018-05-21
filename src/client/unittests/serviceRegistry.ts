@@ -13,14 +13,21 @@ import { TestsHelper } from './common/testUtils';
 import { TestFlatteningVisitor } from './common/testVisitors/flatteningVisitor';
 import { TestFolderGenerationVisitor } from './common/testVisitors/folderGenerationVisitor';
 import { TestResultResetVisitor } from './common/testVisitors/resultResetVisitor';
-import { ITestCollectionStorageService, ITestDebugLauncher, ITestDiscoveryService, ITestManager, ITestManagerFactory, ITestManagerService, ITestManagerServiceFactory, IUnitTestSocketServer } from './common/types';
-import { ITestResultsService, ITestsHelper, ITestsParser, ITestVisitor, IWorkspaceTestManagerService, TestProvider } from './common/types';
+import {
+    ITestCollectionStorageService, ITestDebugLauncher, ITestDiscoveryService, ITestManager, ITestManagerFactory, ITestManagerService, ITestManagerServiceFactory, ITestResultsService,
+    ITestsHelper, ITestsParser, ITestVisitor, IUnitTestSocketServer, IWorkspaceTestManagerService, TestProvider
+} from './common/types';
+import { ConfigurationService } from './configuration';
+import { TestResultDisplay } from './display/main';
+import { TestDisplay } from './display/picker';
+import { UnitTestManagementService } from './main';
 import { TestManager as NoseTestManager } from './nosetest/main';
 import { TestDiscoveryService as NoseTestDiscoveryService } from './nosetest/services/discoveryService';
 import { TestsParser as NoseTestTestsParser } from './nosetest/services/parserService';
 import { TestManager as PyTestTestManager } from './pytest/main';
 import { TestDiscoveryService as PytestTestDiscoveryService } from './pytest/services/discoveryService';
 import { TestsParser as PytestTestsParser } from './pytest/services/parserService';
+import { ITestDisplay, ITestResultDisplay, IUnitTestConfigurationService, IUnitTestManagementService } from './types';
 import { TestManager as UnitTestTestManager } from './unittest/main';
 import { TestDiscoveryService as UnitTestTestDiscoveryService } from './unittest/services/discoveryService';
 import { TestsParser as UnitTestTestsParser } from './unittest/services/parserService';
@@ -47,6 +54,11 @@ export function registerTypes(serviceManager: IServiceManager) {
     serviceManager.add<ITestDiscoveryService>(ITestDiscoveryService, UnitTestTestDiscoveryService, UNITTEST_PROVIDER);
     serviceManager.add<ITestDiscoveryService>(ITestDiscoveryService, PytestTestDiscoveryService, PYTEST_PROVIDER);
     serviceManager.add<ITestDiscoveryService>(ITestDiscoveryService, NoseTestDiscoveryService, NOSETEST_PROVIDER);
+
+    serviceManager.addSingleton<IUnitTestConfigurationService>(IUnitTestConfigurationService, ConfigurationService);
+    serviceManager.addSingleton<IUnitTestManagementService>(IUnitTestManagementService, UnitTestManagementService);
+    serviceManager.addSingleton<ITestResultDisplay>(ITestResultDisplay, TestResultDisplay);
+    serviceManager.addSingleton<ITestDisplay>(ITestDisplay, TestDisplay);
 
     serviceManager.addFactory<ITestManager>(ITestManagerFactory, (context) => {
         return (testProvider: TestProvider, workspaceFolder: Uri, rootDirectory: string) => {

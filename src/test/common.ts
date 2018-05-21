@@ -30,6 +30,7 @@ export async function updateSetting(setting: PythonSettingKeys, value: {} | unde
     }
     // tslint:disable-next-line:await-promise
     await settings.update(setting, value, configTarget);
+    await sleep(2000);
     PythonSettings.dispose();
 }
 

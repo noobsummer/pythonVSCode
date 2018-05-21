@@ -1,6 +1,5 @@
 import { CancellationToken, Disposable, OutputChannel, Uri } from 'vscode';
-import { IUnitTestSettings } from '../../common/types';
-import { Product } from '../../common/types';
+import { IUnitTestSettings, Product } from '../../common/types';
 import { CommandSource } from './constants';
 
 export type TestProvider = 'nosetest' | 'pytest' | 'unittest';
@@ -240,6 +239,6 @@ export type ParserOptions = TestDiscoveryOptions;
 export const IUnitTestSocketServer = Symbol('IUnitTestSocketServer');
 export interface IUnitTestSocketServer extends Disposable {
     on(event: string | symbol, listener: Function): this;
-    start(options?: { port?: number, host?: string }): Promise<number>;
+    start(options?: { port?: number; host?: string }): Promise<number>;
     stop(): void;
 }

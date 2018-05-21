@@ -1,20 +1,84 @@
 'use strict';
+
+import { inject, injectable } from 'inversify';
 import * as path from 'path';
-import * as vscode from 'vscode';
-import { OutputChannel, Uri } from 'vscode';
-import { PythonSettings } from '../common/configSettings';
-import { IInstaller, Product } from '../common/types';
+import { OutputChannel, Uri, window, workspace } from 'vscode';
+import { IApplicationShell } from '../common/application/types';
+import { IConfigurationService, IInstaller, IOutputChannel, Product } from '../common/types';
 import { getSubDirectories } from '../common/utils';
+import { IServiceContainer } from '../ioc/types';
+import { TEST_OUTPUT_CHANNEL } from './common/constants';
 import { TestConfigurationManager } from './common/managers/testConfigurationManager';
 import { TestConfigSettingsService } from './common/services/configSettingService';
 import { UnitTestProduct } from './common/types';
-import { ConfigurationManager } from './nosetest/testConfigurationManager';
 import * as nose from './nosetest/testConfigurationManager';
 import * as pytest from './pytest/testConfigurationManager';
+import { IUnitTestConfigurationService } from './types';
 import * as unittest from './unittest/testConfigurationManager';
 
+@injectable()
+export class ConfigurationService implements IUnitTestConfigurationService {
+    private readonly configurationService: IConfigurationService;
+    private readonly appShell: IApplicationShell;
+    private readonly installer: IInstaller;
+    private readonly outputChannel: OutputChannel;
+    constructor(@inject(IServiceContainer) serviceContainer: IServiceContainer) {
+        this.configurationService = serviceContainer.get<IConfigurationService>(IConfigurationService);
+        this.appShell = serviceContainer.get<IApplicationShell>(IApplicationShell);
+        this.installer = serviceContainer.get<IInstaller>(IInstaller);
+        this.outputChannel = serviceContainer.get<OutputChannel>(IOutputChannel, TEST_OUTPUT_CHANNEL);
+    }
+    public async displayTestFrameworkError(wkspace: Uri): Promise<void> {
+        const settings = this.configurationService.getSettings(wkspace);
+        let enabledCount = settings.unitTest.pyTestEnabled ? 1 : 0;
+        enabledCount += settings.unitTest.nosetestsEnabled ? 1 : 0;
+        enabledCount += settings.unitTest.unittestEnabled ? 1 : 0;
+        if (enabledCount > 1) {
+            return promptToEnableAndConfigureTestFramework(wkspace, this.installer, this.outputChannel, 'Enable only one of the test frameworks (unittest, pytest or nosetest).', true);
+        } else {
+            const option = 'Enable and configure a Test Framework';
+            const item = await this.appShell.showInformationMessage('No test framework configured (unittest, pytest or nosetest)', option);
+            if (item === option) {
+                return promptToEnableAndConfigureTestFramework(wkspace, this.installer, this.outputChannel);
+            }
+            return Promise.reject(null);
+        }
+    }
+    public async displayPromptToEnableTests(rootDir: string): Promise<void> {
+        const settings = this.configurationService.getSettings(Uri.file(rootDir));
+        if (settings.unitTest.pyTestEnabled ||
+            settings.unitTest.nosetestsEnabled ||
+            settings.unitTest.unittestEnabled) {
+            return;
+        }
+
+        if (!settings.unitTest.promptToConfigure) {
+            return;
+        }
+
+        const yes = 'Yes';
+        const no = 'Later';
+        const noNotAgain = 'No, don\'t ask again';
+
+        const hasTests = checkForExistenceOfTests(rootDir);
+        if (!hasTests) {
+            return;
+        }
+        const item = await window.showInformationMessage('You seem to have tests, would you like to enable a test framework?', yes, no, noNotAgain);
+        if (!item || item === no) {
+            return;
+        }
+        if (item === yes) {
+            await promptToEnableAndConfigureTestFramework(workspace.getWorkspaceFolder(Uri.file(rootDir))!.uri, this.installer, this.outputChannel);
+        } else {
+            const pythonConfig = workspace.getConfiguration('python');
+            await pythonConfig.update('unitTest.promptToConfigure', false);
+        }
+    }
+}
+
 // tslint:disable-next-line:no-any
-async function promptToEnableAndConfigureTestFramework(wkspace: Uri, installer: IInstaller, outputChannel: vscode.OutputChannel, messageToDisplay: string = 'Select a test framework/tool to enable', enableOnly: boolean = false) {
+async function promptToEnableAndConfigureTestFramework(wkspace: Uri, installer: IInstaller, outputChannel: OutputChannel, messageToDisplay: string = 'Select a test framework/tool to enable', enableOnly: boolean = false) {
     const selectedTestRunner = await selectTestRunner(messageToDisplay);
     if (typeof selectedTestRunner !== 'number') {
         return Promise.reject(null);
@@ -37,60 +101,12 @@ async function promptToEnableAndConfigureTestFramework(wkspace: Uri, installer: 
         return enableTest(wkspace, configMgr).then(() => Promise.reject(reason));
     });
 }
-export function displayTestFrameworkError(wkspace: Uri, outputChannel: vscode.OutputChannel, installer: IInstaller) {
-    const settings = PythonSettings.getInstance();
-    let enabledCount = settings.unitTest.pyTestEnabled ? 1 : 0;
-    enabledCount += settings.unitTest.nosetestsEnabled ? 1 : 0;
-    enabledCount += settings.unitTest.unittestEnabled ? 1 : 0;
-    if (enabledCount > 1) {
-        return promptToEnableAndConfigureTestFramework(wkspace, installer, outputChannel, 'Enable only one of the test frameworks (unittest, pytest or nosetest).', true);
-    } else {
-        const option = 'Enable and configure a Test Framework';
-        return vscode.window.showInformationMessage('No test framework configured (unittest, pytest or nosetest)', option).then(item => {
-            if (item === option) {
-                return promptToEnableAndConfigureTestFramework(wkspace, installer, outputChannel);
-            }
-            return Promise.reject(null);
-        });
-    }
-}
-export async function displayPromptToEnableTests(rootDir: string, outputChannel: vscode.OutputChannel, installer: IInstaller) {
-    const settings = PythonSettings.getInstance(vscode.Uri.file(rootDir));
-    if (settings.unitTest.pyTestEnabled ||
-        settings.unitTest.nosetestsEnabled ||
-        settings.unitTest.unittestEnabled) {
-        return;
-    }
-
-    if (!settings.unitTest.promptToConfigure) {
-        return;
-    }
-
-    const yes = 'Yes';
-    const no = 'Later';
-    const noNotAgain = 'No, don\'t ask again';
-
-    const hasTests = checkForExistenceOfTests(rootDir);
-    if (!hasTests) {
-        return;
-    }
-    const item = await vscode.window.showInformationMessage('You seem to have tests, would you like to enable a test framework?', yes, no, noNotAgain);
-    if (!item || item === no) {
-        return;
-    }
-    if (item === yes) {
-        await promptToEnableAndConfigureTestFramework(vscode.workspace.getWorkspaceFolder(vscode.Uri.file(rootDir))!.uri, installer, outputChannel);
-    } else {
-        const pythonConfig = vscode.workspace.getConfiguration('python');
-        await pythonConfig.update('unitTest.promptToConfigure', false);
-    }
-}
 
 // Configure everything before enabling.
 // Cuz we don't want the test engine (in main.ts file - tests get discovered when config changes are detected)
 // to start discovering tests when tests haven't been configured properly.
-function enableTest(wkspace: Uri, configMgr: ConfigurationManager) {
-    const pythonConfig = vscode.workspace.getConfiguration('python', wkspace);
+function enableTest(wkspace: Uri, configMgr: TestConfigurationManager) {
+    const pythonConfig = workspace.getConfiguration('python', wkspace);
     // tslint:disable-next-line:no-backbone-get-set-outside-model
     if (pythonConfig.get<boolean>('unitTest.promptToConfigure')) {
         return configMgr.enable();
@@ -148,7 +164,7 @@ async function selectTestRunner(placeHolderMessage: string): Promise<UnitTestPro
         matchOnDetail: true,
         placeHolder: placeHolderMessage
     };
-    const selectedTestRunner = await vscode.window.showQuickPick(items, options);
+    const selectedTestRunner = await window.showQuickPick(items, options);
     // tslint:disable-next-line:prefer-type-cast
     return selectedTestRunner ? selectedTestRunner.product as UnitTestProduct : undefined;
 }
