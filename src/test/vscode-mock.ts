@@ -76,7 +76,7 @@ export class Uri implements vscode.Uri {
         throw new Error('Not implemented');
     }
     public toString(skipEncoding?: boolean): string {
-        throw new Error('Not implemented');
+        return this.fsPath;
     }
     public toJSON(): any {
         return this.fsPath;

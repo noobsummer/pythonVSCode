@@ -127,7 +127,7 @@ export type UnitTestProduct = Product.nosetest | Product.pytest | Product.unitte
 
 export const ITestConfigSettingsService = Symbol('ITestConfigSettingsService');
 export interface ITestConfigSettingsService {
-    updateTestArgs(testDirectory: string, product: UnitTestProduct, args: string[]): Promise<void>;
+    updateTestArgs(testDirectory: string | Uri, product: UnitTestProduct, args: string[]): Promise<void>;
     enable(testDirectory: string | Uri, product: UnitTestProduct): Promise<void>;
     disable(testDirectory: string | Uri, product: UnitTestProduct): Promise<void>;
 }

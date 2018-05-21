@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify';
 import * as path from 'path';
-import { commands, QuickPickItem, Uri, window } from 'vscode';
+import { commands, QuickPickItem, Uri } from 'vscode';
 import { IApplicationShell } from '../../common/application/types';
 import * as constants from '../../common/constants';
 import { noop } from '../../common/core.utils';
@@ -66,7 +66,7 @@ export class TestDisplay implements ITestDisplay {
                 testFunctions.some(testFunc => testFunc.nameToRun === fn.testFunction.nameToRun);
         });
 
-        window.showQuickPick(buildItemsForFunctions(rootDirectory, flattenedFunctions, undefined, undefined, debug),
+        this.appShell.showQuickPick(buildItemsForFunctions(rootDirectory, flattenedFunctions, undefined, undefined, debug),
             { matchOnDescription: true, matchOnDetail: true })
             .then(testItem => testItem ? onItemSelected(cmdSource, wkspace, testItem, debug) : noop());
     }

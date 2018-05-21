@@ -13,6 +13,7 @@ export const IUnitTestConfigurationService = Symbol('IUnitTestConfigurationServi
 export interface IUnitTestConfigurationService {
     displayTestFrameworkError(wkspace: Uri): Promise<void>;
     selectTestRunner(placeHolderMessage: string): Promise<UnitTestProduct | undefined>;
+    enableTest(wkspace: Uri, product: UnitTestProduct);
 }
 
 export const ITestResultDisplay = Symbol('ITestResultDisplay');
