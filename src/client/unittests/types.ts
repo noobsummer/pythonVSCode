@@ -4,14 +4,15 @@
 'use strict';
 
 import { Disposable, Event, TextDocument, Uri } from 'vscode';
+import { Product } from '../common/types';
 import { PythonSymbolProvider } from '../providers/symbolProvider';
 import { CommandSource } from './common/constants';
-import { FlattenedTestFunction, ITestManager, TestFile, TestFunction, Tests, TestsToRun } from './common/types';
+import { FlattenedTestFunction, ITestManager, TestFile, TestFunction, Tests, TestsToRun, UnitTestProduct } from './common/types';
 
 export const IUnitTestConfigurationService = Symbol('IUnitTestConfigurationService');
 export interface IUnitTestConfigurationService {
     displayTestFrameworkError(wkspace: Uri): Promise<void>;
-    displayPromptToEnableTests(rootDir: string): Promise<void>;
+    selectTestRunner(placeHolderMessage: string): Promise<UnitTestProduct | undefined>;
 }
 
 export const ITestResultDisplay = Symbol('ITestResultDisplay');
@@ -52,4 +53,15 @@ export interface IUnitTestManagementService {
     selectAndRunTestMethod(cmdSource: CommandSource, resource: Uri, debug?: boolean): Promise<void>;
 
     viewOutput(cmdSource: CommandSource): void;
+}
+
+export interface ITestConfigurationManager {
+    configure(wkspace: Uri): Promise<void>;
+    enable(): Promise<void>;
+    disable(): Promise<void>;
+}
+
+export const ITestConfigurationManagerFactory = Symbol('ITestConfigurationManagerFactory');
+export interface ITestConfigurationManagerFactory {
+    create(wkspace: Uri, product: Product): ITestConfigurationManager;
 }

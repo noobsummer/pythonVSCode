@@ -3,9 +3,10 @@ import { OutputChannel, QuickPickItem, Uri, window } from 'vscode';
 import { createDeferred } from '../../../common/helpers';
 import { IInstaller, Product } from '../../../common/types';
 import { getSubDirectories } from '../../../common/utils';
+import { ITestConfigurationManager } from '../../types';
 import { ITestConfigSettingsService, UnitTestProduct } from './../types';
 
-export abstract class TestConfigurationManager {
+export abstract class TestConfigurationManager implements ITestConfigurationManager {
     constructor(protected workspace: Uri,
         protected product: UnitTestProduct,
         protected readonly outputChannel: OutputChannel,

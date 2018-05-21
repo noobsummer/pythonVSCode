@@ -1,13 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
-import { Uri } from 'vscode';
+import { OutputChannel, QuickPickItem, Uri } from 'vscode';
 import { IInstaller, Product } from '../../common/types';
 import { TestConfigurationManager } from '../common/managers/testConfigurationManager';
 import { ITestConfigSettingsService } from '../common/types';
 
 export class ConfigurationManager extends TestConfigurationManager {
-    constructor(workspace: Uri, outputChannel: vscode.OutputChannel,
+    constructor(workspace: Uri, outputChannel: OutputChannel,
         installer: IInstaller, testConfigSettingsService: ITestConfigSettingsService) {
         super(workspace, Product.pytest, outputChannel, installer, testConfigSettingsService);
     }
@@ -24,7 +23,7 @@ export class ConfigurationManager extends TestConfigurationManager {
     public async configure(wkspace: Uri) {
         const args: string[] = [];
         const configFileOptionLabel = 'Use existing config file';
-        const options: vscode.QuickPickItem[] = [];
+        const options: QuickPickItem[] = [];
         const configFiles = await ConfigurationManager.configFilesExist(wkspace.fsPath);
         // If a config file exits, there's nothing to be configured.
         if (configFiles.length > 0 && configFiles.length !== 1 && configFiles[0] !== 'setup.cfg') {

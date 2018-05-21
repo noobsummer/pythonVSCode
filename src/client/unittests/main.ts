@@ -3,7 +3,7 @@
 // tslint:disable:no-duplicate-imports no-unnecessary-callback-wrapper
 
 import { inject, injectable } from 'inversify';
-import { ConfigurationChangeEvent, Disposable, OutputChannel, TextDocument, Uri, window } from 'vscode';
+import { ConfigurationChangeEvent, Disposable, OutputChannel, TextDocument, Uri } from 'vscode';
 import * as vscode from 'vscode';
 import { ICommandManager, IDocumentManager, IWorkspaceService } from '../common/application/types';
 import * as constants from '../common/constants';
@@ -23,6 +23,7 @@ export class UnitTestManagementService implements IUnitTestManagementService, Di
     private readonly outputChannel: vscode.OutputChannel;
     private readonly disposableRegistry: Disposable[];
     private workspaceTestManagerService?: IWorkspaceTestManagerService;
+    private documentManager: IDocumentManager;
     private workspaceService: IWorkspaceService;
     private testResultDisplay?: ITestResultDisplay;
     private autoDiscoverTimer?: NodeJS.Timer;
@@ -33,6 +34,7 @@ export class UnitTestManagementService implements IUnitTestManagementService, Di
         this.disposableRegistry = serviceContainer.get<Disposable[]>(IDisposableRegistry);
         this.outputChannel = serviceContainer.get<OutputChannel>(IOutputChannel, TEST_OUTPUT_CHANNEL);
         this.workspaceService = serviceContainer.get<IWorkspaceService>(IWorkspaceService);
+        this.documentManager = serviceContainer.get<IDocumentManager>(IDocumentManager);
 
         this.disposableRegistry.push(this);
     }
@@ -134,7 +136,7 @@ export class UnitTestManagementService implements IUnitTestManagementService, Di
         // tslint:disable-next-line:no-empty
         this.discoverTests(CommandSource.auto, this.workspaceService.workspaceFolders![0].uri, true).catch(() => { });
     }
-    public async  discoverTests(cmdSource: CommandSource, resource?: Uri, ignoreCache?: boolean, userInitiated?: boolean, quietMode?: boolean) {
+    public async discoverTests(cmdSource: CommandSource, resource?: Uri, ignoreCache?: boolean, userInitiated?: boolean, quietMode?: boolean) {
         const testManager = await this.getTestManager(true, resource);
         if (!testManager) {
             return;
@@ -233,10 +235,10 @@ export class UnitTestManagementService implements IUnitTestManagementService, Di
         await this.runTestsImpl(cmdSource, testManager.workspaceFolder, { testFile: [selectedFile] });
     }
     public async runCurrentTestFile(cmdSource: CommandSource) {
-        if (!window.activeTextEditor) {
+        if (!this.documentManager.activeTextEditor) {
             return;
         }
-        const testManager = await this.getTestManager(true, window.activeTextEditor.document.uri);
+        const testManager = await this.getTestManager(true, this.documentManager.activeTextEditor.document.uri);
         if (!testManager) {
             return;
         }
@@ -248,7 +250,7 @@ export class UnitTestManagementService implements IUnitTestManagementService, Di
         const testCollectionStorage = this.serviceContainer.get<ITestCollectionStorageService>(ITestCollectionStorageService);
         const tests = testCollectionStorage.getTests(testManager.workspaceFolder)!;
         const testFiles = tests.testFiles.filter(testFile => {
-            return testFile.fullPath === window.activeTextEditor!.document.uri.fsPath;
+            return testFile.fullPath === this.documentManager.activeTextEditor!.document.uri.fsPath;
         });
         if (testFiles.length < 1) {
             return;

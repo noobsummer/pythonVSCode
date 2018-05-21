@@ -1,13 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
-import { Uri } from 'vscode';
+import { OutputChannel, Uri } from 'vscode';
 import { IInstaller, Product } from '../../common/types';
 import { TestConfigurationManager } from '../common/managers/testConfigurationManager';
 import { ITestConfigSettingsService } from '../common/types';
 
 export class ConfigurationManager extends TestConfigurationManager {
-    constructor(workspace: Uri, outputChannel: vscode.OutputChannel,
+    constructor(workspace: Uri, outputChannel: OutputChannel,
         installer: IInstaller, testConfigSettingsService: ITestConfigSettingsService) {
         super(workspace, Product.nosetest, outputChannel, installer, testConfigSettingsService);
     }
