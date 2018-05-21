@@ -12,8 +12,23 @@ const Module = require('module');
 type VSCode = typeof vscode;
 
 const mockedVSCode: Partial<VSCode> = {};
-
+const mockedVSCodeNamespaces: { [P in keyof VSCode]?: TypeMoq.IMock<VSCode[P]> } = {};
 const originalLoad = Module._load;
+
+generateMock('workspace');
+generateMock('window');
+generateMock('commands');
+generateMock('languages');
+generateMock('env');
+generateMock('debug');
+generateMock('extensions');
+generateMock('scm');
+
+function generateMock<K extends keyof VSCode>(name: K): void {
+    const mockedObj = TypeMoq.Mock.ofType<VSCode[K]>();
+    mockedVSCode[name] = mockedObj.object;
+    mockedVSCodeNamespaces[name] = mockedObj as any;
+}
 
 export function initialize() {
     Module._load = function (request, parent) {
@@ -24,10 +39,22 @@ export function initialize() {
     };
 }
 
+/**
+ * Gets the mocked VS Code namespaces/classes.
+ * For VS Code namespaces, always return pre-mocked objects, else create a new mock object.
+ * @export
+ * @template K
+ * @param {K} name
+ * @returns {TypeMoq.IMock<VSCode[K]>}
+ */
 export function mock<K extends keyof VSCode>(name: K): TypeMoq.IMock<VSCode[K]> {
-    const mockedObj = TypeMoq.Mock.ofType<VSCode[K]>();
-    mockedVSCode[name] = mockedObj.object;
-    return mockedObj;
+    if (mockedVSCodeNamespaces[name] === undefined) {
+        return TypeMoq.Mock.ofType<VSCode[K]>();
+    }
+    // When re-using, always reset (other tests could have used this same instance).
+    const mockObj = mockedVSCodeNamespaces[name]!;
+    mockObj.reset();
+    return mockObj as any as TypeMoq.IMock<VSCode[K]>;
 }
 
 // This is one of the very few classes that we need in our unit tests.
