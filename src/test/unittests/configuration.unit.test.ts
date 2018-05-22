@@ -7,7 +7,7 @@
 
 import { expect } from 'chai';
 import * as typeMoq from 'typemoq';
-import { OutputChannel, WorkspaceConfiguration } from 'vscode';
+import { OutputChannel, Uri, WorkspaceConfiguration } from 'vscode';
 import { IApplicationShell, IWorkspaceService } from '../../client/common/application/types';
 import { EnumEx } from '../../client/common/enumUtils';
 import { IConfigurationService, IInstaller, IOutputChannel, IPythonSettings, IUnitTestSettings, Product } from '../../client/common/types';
@@ -16,7 +16,6 @@ import { TEST_OUTPUT_CHANNEL } from '../../client/unittests/common/constants';
 import { UnitTestProduct } from '../../client/unittests/common/types';
 import { ConfigurationService } from '../../client/unittests/configuration';
 import { ITestConfigurationManager, ITestConfigurationManagerFactory } from '../../client/unittests/types';
-import { Uri } from '../vscode-mock';
 
 suite('Unit Tests - ConfigurationService', () => {
     [Product.pytest, Product.unittest, Product.nosetest].forEach(prodItem => {

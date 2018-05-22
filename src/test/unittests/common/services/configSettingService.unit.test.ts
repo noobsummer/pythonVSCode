@@ -8,14 +8,13 @@
 import { expect, use } from 'chai';
 import * as chaiPromise from 'chai-as-promised';
 import * as typeMoq from 'typemoq';
-import { WorkspaceConfiguration, WorkspaceFolder } from 'vscode';
+import { Uri, WorkspaceConfiguration, WorkspaceFolder } from 'vscode';
 import { IWorkspaceService } from '../../../../client/common/application/types';
 import { EnumEx } from '../../../../client/common/enumUtils';
 import { Product } from '../../../../client/common/types';
 import { IServiceContainer } from '../../../../client/ioc/types';
 import { TestConfigSettingsService } from '../../../../client/unittests/common/services/configSettingService';
 import { ITestConfigSettingsService, UnitTestProduct } from '../../../../client/unittests/common/types';
-import { Uri } from '../../../vscode-mock';
 
 use(chaiPromise);
 

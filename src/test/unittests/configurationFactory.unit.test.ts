@@ -6,7 +6,7 @@
 import { expect, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import * as typeMoq from 'typemoq';
-import { OutputChannel } from 'vscode';
+import { OutputChannel, Uri } from 'vscode';
 import { IInstaller, IOutputChannel, Product } from '../../client/common/types';
 import { IServiceContainer } from '../../client/ioc/types';
 import { TEST_OUTPUT_CHANNEL } from '../../client/unittests/common/constants';
@@ -16,7 +16,6 @@ import * as nose from '../../client/unittests/nosetest/testConfigurationManager'
 import * as pytest from '../../client/unittests/pytest/testConfigurationManager';
 import { ITestConfigurationManagerFactory } from '../../client/unittests/types';
 import * as unittest from '../../client/unittests/unittest/testConfigurationManager';
-import { Uri } from '../vscode-mock';
 
 use(chaiAsPromised);
 

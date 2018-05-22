@@ -160,6 +160,7 @@ export interface ITestsHelper {
     getSettingsPropertyNames(product: Product): TestSettingsPropertyNames;
     flattenTestFiles(testFiles: TestFile[]): Tests;
     placeTestFilesIntoFolders(tests: Tests): void;
+    displayTestErrorMessage(message: string): void;
 }
 
 export const ITestVisitor = Symbol('ITestVisitor');

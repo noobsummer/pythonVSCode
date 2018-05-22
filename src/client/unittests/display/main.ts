@@ -8,8 +8,7 @@ import { isNotInstalledError } from '../../common/helpers';
 import { IConfigurationService } from '../../common/types';
 import { IServiceContainer } from '../../ioc/types';
 import { CANCELLATION_REASON } from '../common/constants';
-import { displayTestErrorMessage } from '../common/testUtils';
-import { Tests } from '../common/types';
+import { ITestsHelper, Tests } from '../common/types';
 import { ITestResultDisplay } from '../types';
 
 @injectable()
@@ -22,6 +21,7 @@ export class TestResultDisplay implements ITestResultDisplay {
     private progressPrefix!: string;
     private readonly didChange = new EventEmitter<void>();
     private readonly appShell: IApplicationShell;
+    private readonly testsHelper: ITestsHelper;
     public get onDidChange(): Event<void> {
         return this.didChange.event;
     }
@@ -30,10 +30,11 @@ export class TestResultDisplay implements ITestResultDisplay {
     constructor(@inject(IServiceContainer) private serviceContainer: IServiceContainer) {
         this.appShell = serviceContainer.get<IApplicationShell>(IApplicationShell);
         this.statusBar = this.appShell.createStatusBarItem(StatusBarAlignment.Left);
+        this.testsHelper = serviceContainer.get<ITestsHelper>(ITestsHelper);
     }
     public dispose() {
+        this.clearProgressTicker();
         this.statusBar.dispose();
-
     }
     public get enabled() {
         return this._enabled;
@@ -114,7 +115,7 @@ export class TestResultDisplay implements ITestResultDisplay {
         } else {
             this.statusBar.text = '$(alert) Tests Failed';
             this.statusBar.tooltip = 'Running Tests Failed';
-            displayTestErrorMessage('There was an error in running the tests.');
+            this.testsHelper.displayTestErrorMessage('There was an error in running the tests.');
         }
         return Promise.reject(reason);
     }

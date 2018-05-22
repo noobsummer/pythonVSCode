@@ -6,12 +6,11 @@
 // tslint:disable:no-any
 
 import * as TypeMoq from 'typemoq';
-import { OutputChannel } from 'vscode';
+import { OutputChannel, Uri } from 'vscode';
 import { EnumEx } from '../../../../client/common/enumUtils';
 import { IInstaller, Product } from '../../../../client/common/types';
 import { TestConfigurationManager } from '../../../../client/unittests/common/managers/testConfigurationManager';
 import { ITestConfigSettingsService, UnitTestProduct } from '../../../../client/unittests/common/types';
-import { Uri } from '../../../vscode-mock';
 
 class MockTestConfigurationManager extends TestConfigurationManager {
     public configure(wkspace: any): Promise<any> {
