@@ -57,6 +57,7 @@ export interface IUnitTestManagementService {
 }
 
 export interface ITestConfigurationManager {
+    requiresUserToConfigure(wkspace: Uri): Promise<boolean>;
     configure(wkspace: Uri): Promise<void>;
     enable(): Promise<void>;
     disable(): Promise<void>;
