@@ -10,7 +10,7 @@ import { UnitTestProduct } from './common/types';
 import { ITestConfigurationManagerFactory, IUnitTestConfigurationService } from './types';
 
 @injectable()
-export class ConfigurationService implements IUnitTestConfigurationService {
+export class UnitTestConfigurationService implements IUnitTestConfigurationService {
     private readonly configurationService: IConfigurationService;
     private readonly appShell: IApplicationShell;
     private readonly installer: IInstaller;

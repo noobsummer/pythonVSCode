@@ -14,7 +14,7 @@ import { IConfigurationService, IInstaller, IOutputChannel, IPythonSettings, IUn
 import { IServiceContainer } from '../../client/ioc/types';
 import { TEST_OUTPUT_CHANNEL } from '../../client/unittests/common/constants';
 import { UnitTestProduct } from '../../client/unittests/common/types';
-import { ConfigurationService } from '../../client/unittests/configuration';
+import { UnitTestConfigurationService } from '../../client/unittests/configuration';
 import { ITestConfigurationManager, ITestConfigurationManagerFactory } from '../../client/unittests/types';
 
 suite('Unit Tests - ConfigurationService', () => {
@@ -24,7 +24,7 @@ suite('Unit Tests - ConfigurationService', () => {
         const productName = prods.filter(item => item.value === product)[0];
         const workspaceUri = Uri.file(__filename);
         suite(productName.name, () => {
-            let testConfigService: typeMoq.IMock<ConfigurationService>;
+            let testConfigService: typeMoq.IMock<UnitTestConfigurationService>;
             let workspaceService: typeMoq.IMock<IWorkspaceService>;
             let factory: typeMoq.IMock<ITestConfigurationManagerFactory>;
             let appShell: typeMoq.IMock<IApplicationShell>;
@@ -49,7 +49,7 @@ suite('Unit Tests - ConfigurationService', () => {
                 serviceContainer.setup(c => c.get(typeMoq.It.isValue(IApplicationShell))).returns(() => appShell.object);
                 serviceContainer.setup(c => c.get(typeMoq.It.isValue(IWorkspaceService))).returns(() => workspaceService.object);
                 serviceContainer.setup(c => c.get(typeMoq.It.isValue(ITestConfigurationManagerFactory))).returns(() => factory.object);
-                testConfigService = typeMoq.Mock.ofType(ConfigurationService, typeMoq.MockBehavior.Loose, true, serviceContainer.object);
+                testConfigService = typeMoq.Mock.ofType(UnitTestConfigurationService, typeMoq.MockBehavior.Loose, true, serviceContainer.object);
             });
             test('Enable Test when setting unitTest.promptToConfigure is enabled', async () => {
                 const configMgr = typeMoq.Mock.ofType<ITestConfigurationManager>();

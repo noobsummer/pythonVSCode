@@ -56,7 +56,7 @@ export class TestResultDisplay implements ITestResultDisplay {
             .catch(noop);
     }
     public displayDiscoverStatus(testDiscovery: Promise<Tests>, quietMode: boolean = false) {
-        this.displayProgress('Discovering Tests', 'Discovering Tests (Click to Stop)', constants.Commands.Tests_Ask_To_Stop_Discovery);
+        this.displayProgress('Discovering Tests', 'Discovering tests (click to stop)', constants.Commands.Tests_Ask_To_Stop_Discovery);
         return testDiscovery.then(tests => {
             this.updateWithDiscoverSuccess(tests, quietMode);
             return tests;
@@ -190,7 +190,7 @@ export class TestResultDisplay implements ITestResultDisplay {
                 // tslint:disable-next-line:no-suspicious-comment
                 // TODO: show an option that will invoke a command 'python.test.configureTest' or similar.
                 // This will be hanlded by main.ts that will capture input from user and configure the tests.
-                this.appShell.showErrorMessage('There was an error in discovering tests, please check the configuration settings for the tests.');
+                this.appShell.showErrorMessage('Test discovery error, please check the configuration settings for the tests.');
             }
         }
     }

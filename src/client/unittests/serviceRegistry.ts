@@ -18,7 +18,7 @@ import {
     ITestCollectionStorageService, ITestConfigSettingsService, ITestDebugLauncher, ITestDiscoveryService, ITestManager, ITestManagerFactory, ITestManagerService, ITestManagerServiceFactory,
     ITestResultsService, ITestsHelper, ITestsParser, ITestVisitor, IUnitTestSocketServer, IWorkspaceTestManagerService, TestProvider
 } from './common/types';
-import { ConfigurationService } from './configuration';
+import { UnitTestConfigurationService } from './configuration';
 import { TestConfigurationManagerFactory } from './configurationFactory';
 import { TestResultDisplay } from './display/main';
 import { TestDisplay } from './display/picker';
@@ -57,7 +57,7 @@ export function registerTypes(serviceManager: IServiceManager) {
     serviceManager.add<ITestDiscoveryService>(ITestDiscoveryService, PytestTestDiscoveryService, PYTEST_PROVIDER);
     serviceManager.add<ITestDiscoveryService>(ITestDiscoveryService, NoseTestDiscoveryService, NOSETEST_PROVIDER);
 
-    serviceManager.addSingleton<IUnitTestConfigurationService>(IUnitTestConfigurationService, ConfigurationService);
+    serviceManager.addSingleton<IUnitTestConfigurationService>(IUnitTestConfigurationService, UnitTestConfigurationService);
     serviceManager.addSingleton<IUnitTestManagementService>(IUnitTestManagementService, UnitTestManagementService);
     serviceManager.addSingleton<ITestResultDisplay>(ITestResultDisplay, TestResultDisplay);
     serviceManager.addSingleton<ITestDisplay>(ITestDisplay, TestDisplay);
