@@ -7,8 +7,7 @@ import { UNITTEST_DISCOVER, UNITTEST_RUN } from '../../../telemetry/constants';
 import { sendTelemetryEvent } from '../../../telemetry/index';
 import { TestDiscoverytTelemetry, TestRunTelemetry } from '../../../telemetry/types';
 import { CANCELLATION_REASON, CommandSource, TEST_OUTPUT_CHANNEL } from './../constants';
-import { displayTestErrorMessage } from './../testUtils';
-import { ITestCollectionStorageService, ITestDiscoveryService, ITestManager, ITestResultsService, TestDiscoveryOptions, TestProvider, Tests, TestStatus, TestsToRun } from './../types';
+import { ITestCollectionStorageService, ITestDiscoveryService, ITestManager, ITestResultsService, ITestsHelper, TestDiscoveryOptions, TestProvider, Tests, TestStatus, TestsToRun } from './../types';
 
 enum CancellationTokenType {
     testDiscovery,
@@ -130,7 +129,8 @@ export abstract class BaseTestManager implements ITestManager {
                     }
                 });
                 if (haveErrorsInDiscovering && !quietMode) {
-                    displayTestErrorMessage('There were some errors in discovering unit tests');
+                    const testsHelper = this.serviceContainer.get<ITestsHelper>(ITestsHelper);
+                    testsHelper.displayTestErrorMessage('There were some errors in discovering unit tests');
                 }
                 const wkspace = workspace.getWorkspaceFolder(Uri.file(this.rootDirectory))!.uri;
                 this.testCollectionStorage.storeTests(wkspace, tests);
@@ -214,7 +214,8 @@ export abstract class BaseTestManager implements ITestManager {
                 if (this.testDiscoveryCancellationToken && this.testDiscoveryCancellationToken.isCancellationRequested) {
                     return Promise.reject<Tests>(reason);
                 }
-                displayTestErrorMessage('Errors in discovering tests, continuing with tests');
+                const testsHelper = this.serviceContainer.get<ITestsHelper>(ITestsHelper);
+                testsHelper.displayTestErrorMessage('Errors in discovering tests, continuing with tests');
                 return {
                     rootTestFolders: [], testFiles: [], testFolders: [], testFunctions: [], testSuites: [],
                     summary: { errors: 0, failures: 0, passed: 0, skipped: 0 }

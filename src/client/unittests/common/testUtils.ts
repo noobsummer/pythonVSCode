@@ -1,6 +1,6 @@
 import { inject, injectable, named } from 'inversify';
 import * as path from 'path';
-import { commands, Uri, window, workspace } from 'vscode';
+import { Uri, window, workspace } from 'vscode';
 import { IApplicationShell, ICommandManager } from '../../common/application/types';
 import * as constants from '../../common/constants';
 import { IUnitTestSettings, Product } from '../../common/types';
@@ -19,15 +19,6 @@ export async function selectTestWorkspace(): Promise<Uri | undefined> {
         const workspaceFolder = await (window as any).showWorkspaceFolderPick({ placeHolder: 'Select a workspace' });
         return workspaceFolder ? workspaceFolder.uri : undefined;
     }
-}
-
-export function displayTestErrorMessage(message: string) {
-    window.showErrorMessage(message, constants.Button_Text_Tests_View_Output).then(action => {
-        if (action === constants.Button_Text_Tests_View_Output) {
-            commands.executeCommand(constants.Commands.Tests_ViewOutput, undefined, CommandSource.ui);
-        }
-    });
-
 }
 
 export function extractBetweenDelimiters(content: string, startDelimiter: string, endDelimiter: string): string {
