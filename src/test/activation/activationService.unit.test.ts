@@ -83,8 +83,8 @@ suite('Activation - ActivationService', () => {
                 activationService.dispose();
                 activator.verifyAll();
             });
-            test('Prompt user to reload VS Code when setting is toggled', async () => {
-                let callbackHandler!: (e: ConfigurationChangeEvent) => void;
+            test('Prompt user to reload VS Code and reload, when setting is toggled', async () => {
+                let callbackHandler!: (e: ConfigurationChangeEvent) => Promise<void>;
                 let jediIsEnabledValueInSetting = jediIsEnabled;
                 workspaceService
                     .setup(w => w.onDidChangeConfiguration(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
@@ -106,16 +106,53 @@ suite('Activation - ActivationService', () => {
                 appShell.setup(a => a.showInformationMessage(TypeMoq.It.isAny(), TypeMoq.It.isValue('Reload')))
                     .returns(() => Promise.resolve('Reload'))
                     .verifiable(TypeMoq.Times.once());
+                cmdManager.setup(c => c.executeCommand(TypeMoq.It.isValue('workbench.action.reloadWindow')))
+                    .verifiable(TypeMoq.Times.once());
 
                 // Toggle the value in the setting and invoke the callback.
                 jediIsEnabledValueInSetting = !jediIsEnabledValueInSetting;
-                callbackHandler(event.object);
+                await callbackHandler(event.object);
 
                 event.verifyAll();
                 appShell.verifyAll();
+                cmdManager.verifyAll();
+            });
+            test('Prompt user to reload VS Code and do not reload, when setting is toggled', async () => {
+                let callbackHandler!: (e: ConfigurationChangeEvent) => Promise<void>;
+                let jediIsEnabledValueInSetting = jediIsEnabled;
+                workspaceService
+                    .setup(w => w.onDidChangeConfiguration(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
+                    .callback(cb => callbackHandler = cb)
+                    .returns(() => TypeMoq.Mock.ofType<Disposable>().object)
+                    .verifiable(TypeMoq.Times.once());
+
+                pythonSettings.setup(p => p.jediEnabled).returns(() => jediIsEnabledValueInSetting);
+                const activator = TypeMoq.Mock.ofType<IExtensionActivator>();
+                const activationService = new ExtensionActivationService(serviceContainer.object);
+
+                workspaceService.verifyAll();
+                await testActivation(activationService, activator);
+
+                const event = TypeMoq.Mock.ofType<ConfigurationChangeEvent>();
+                event.setup(e => e.affectsConfiguration(TypeMoq.It.isValue('python.jediEnabled'), TypeMoq.It.isAny()))
+                    .returns(() => true)
+                    .verifiable(TypeMoq.Times.atLeastOnce());
+                appShell.setup(a => a.showInformationMessage(TypeMoq.It.isAny(), TypeMoq.It.isValue('Reload')))
+                    .returns(() => Promise.resolve(undefined))
+                    .verifiable(TypeMoq.Times.once());
+                cmdManager.setup(c => c.executeCommand(TypeMoq.It.isValue('workbench.action.reloadWindow')))
+                    .verifiable(TypeMoq.Times.never());
+
+                // Toggle the value in the setting and invoke the callback.
+                jediIsEnabledValueInSetting = !jediIsEnabledValueInSetting;
+                await callbackHandler(event.object);
+
+                event.verifyAll();
+                appShell.verifyAll();
+                cmdManager.verifyAll();
             });
             test('Do not prompt user to reload VS Code when setting is not toggled', async () => {
-                let callbackHandler!: (e: ConfigurationChangeEvent) => void;
+                let callbackHandler!: (e: ConfigurationChangeEvent) => Promise<void>;
                 workspaceService
                     .setup(w => w.onDidChangeConfiguration(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
                     .callback(cb => callbackHandler = cb)
@@ -134,17 +171,20 @@ suite('Activation - ActivationService', () => {
                     .returns(() => true)
                     .verifiable(TypeMoq.Times.atLeastOnce());
                 appShell.setup(a => a.showInformationMessage(TypeMoq.It.isAny(), TypeMoq.It.isValue('Reload')))
-                    .returns(() => Promise.resolve('Reload'))
+                    .returns(() => Promise.resolve(undefined))
+                    .verifiable(TypeMoq.Times.never());
+                cmdManager.setup(c => c.executeCommand(TypeMoq.It.isValue('workbench.action.reloadWindow')))
                     .verifiable(TypeMoq.Times.never());
 
                 // Invoke the config changed callback.
-                callbackHandler(event.object);
+                await callbackHandler(event.object);
 
                 event.verifyAll();
                 appShell.verifyAll();
+                cmdManager.verifyAll();
             });
             test('Do not prompt user to reload VS Code when setting is not changed', async () => {
-                let callbackHandler!: (e: ConfigurationChangeEvent) => void;
+                let callbackHandler!: (e: ConfigurationChangeEvent) => Promise<void>;
                 workspaceService
                     .setup(w => w.onDidChangeConfiguration(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
                     .callback(cb => callbackHandler = cb)
@@ -163,14 +203,17 @@ suite('Activation - ActivationService', () => {
                     .returns(() => false)
                     .verifiable(TypeMoq.Times.atLeastOnce());
                 appShell.setup(a => a.showInformationMessage(TypeMoq.It.isAny(), TypeMoq.It.isValue('Reload')))
-                    .returns(() => Promise.resolve('Reload'))
+                    .returns(() => Promise.resolve(undefined))
+                    .verifiable(TypeMoq.Times.never());
+                cmdManager.setup(c => c.executeCommand(TypeMoq.It.isValue('workbench.action.reloadWindow')))
                     .verifiable(TypeMoq.Times.never());
 
                 // Invoke the config changed callback.
-                callbackHandler(event.object);
+                await callbackHandler(event.object);
 
                 event.verifyAll();
                 appShell.verifyAll();
+                cmdManager.verifyAll();
             });
         });
     });
