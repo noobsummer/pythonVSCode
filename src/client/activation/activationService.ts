@@ -61,7 +61,7 @@ export class ExtensionActivationService implements IExtensionActivationService, 
             return;
         }
 
-        const item = await this.appShell.showInformationMessage('Please reload Visual Studio Code when switching between the analysis engines.', 'Reload');
+        const item = await this.appShell.showInformationMessage('Please reload the window switching between the analysis engines.', 'Reload');
         if (item === 'Reload') {
             this.serviceContainer.get<ICommandManager>(ICommandManager).executeCommand('workbench.action.reloadWindow');
         }
