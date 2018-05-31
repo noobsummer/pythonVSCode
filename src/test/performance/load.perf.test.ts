@@ -12,7 +12,7 @@ import * as path from 'path';
 import { commands, extensions } from 'vscode';
 import { StopWatch } from '../../client/common/stopWatch';
 
-const AllowedIncreaaseInActivationDelayInMS = 50;
+const AllowedIncreaseInActivationDelayInMS = 500;
 
 suite('Activation Times', () => {
     if (process.env.ACTIVATION_TIMES_LOG_FILE_PATH) {
@@ -66,8 +66,7 @@ suite('Activation Times', () => {
             console.log(`Release version Loaded in ${releaseActivationAvgTime}ms`);
             console.log(`Analysis Engine Loaded in ${analysisEngineActivationAvgTime}ms`);
 
-            expect(devActivationAvgTime - releaseActivationAvgTime).to.be.lessThan(AllowedIncreaaseInActivationDelayInMS, 'Activation times have increased above allowed threshold.');
-            expect(devActivationAvgTime).to.be.lessThan(1000, 'Activation time has exceed 1s.');
+            expect(devActivationAvgTime - releaseActivationAvgTime).to.be.lessThan(AllowedIncreaseInActivationDelayInMS, 'Activation times have increased above allowed threshold.');
         });
     }
 });
