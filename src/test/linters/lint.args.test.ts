@@ -120,7 +120,7 @@ suite('Linting - Arguments', () => {
         });
         test(`Prospector (${fileUri.fsPath.indexOf(' ') > 0 ? 'with spaces' : 'without spaces'})`, async () => {
             const linter = new Prospector(outputChannel.object, serviceContainer);
-            const expectedArgs = ['--absolute-paths', '--output-format=json', fileUri.fsPath];
+            const expectedArgs = ['--absolute-paths', '--output-format=json', path.basename(fileUri.fsPath)];
             await testLinter(linter, fileUri, expectedArgs);
         });
         test(`Pylama (${fileUri.fsPath.indexOf(' ') > 0 ? 'with spaces' : 'without spaces'})`, async () => {
