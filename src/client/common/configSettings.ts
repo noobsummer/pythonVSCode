@@ -4,6 +4,8 @@ import * as child_process from 'child_process';
 import { EventEmitter } from 'events';
 import * as path from 'path';
 import { ConfigurationTarget, DiagnosticSeverity, Disposable, Uri, workspace } from 'vscode';
+import { sendTelemetryEvent } from '../telemetry';
+import { COMPLETION } from '../telemetry/constants';
 import { isTestExecution } from './constants';
 import {
     IAutoCompleteSettings,
@@ -69,6 +71,7 @@ export class PythonSettings extends EventEmitter implements IPythonSettings {
         if (!PythonSettings.pythonSettings.has(workspaceFolderKey)) {
             const settings = new PythonSettings(workspaceFolderUri);
             PythonSettings.pythonSettings.set(workspaceFolderKey, settings);
+            sendTelemetryEvent(COMPLETION, undefined, { addBrackets: settings.autoComplete.addBrackets });
         }
         // tslint:disable-next-line:no-non-null-assertion
         return PythonSettings.pythonSettings.get(workspaceFolderKey)!;

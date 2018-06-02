@@ -57,4 +57,8 @@ export type TestDiscoverytTelemetry = {
 export type FeedbackTelemetry = {
     action: 'accepted' | 'dismissed' | 'doNotShowAgain';
 };
-export type TelemetryProperties = FormatTelemetry | LintingTelemetry | EditorLoadTelemetry | PythonInterpreterTelemetry | CodeExecutionTelemetry | TestRunTelemetry | TestDiscoverytTelemetry | FeedbackTelemetry;
+export type SettingsTelemetry = {
+    addBrackets?: boolean;
+};
+
+export type TelemetryProperties = FormatTelemetry | LintingTelemetry | EditorLoadTelemetry | PythonInterpreterTelemetry | CodeExecutionTelemetry | TestRunTelemetry | TestDiscoverytTelemetry | FeedbackTelemetry | SettingsTelemetry;
