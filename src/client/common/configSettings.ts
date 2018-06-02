@@ -5,7 +5,7 @@ import { EventEmitter } from 'events';
 import * as path from 'path';
 import { ConfigurationTarget, DiagnosticSeverity, Disposable, Uri, workspace } from 'vscode';
 import { sendTelemetryEvent } from '../telemetry';
-import { COMPLETION } from '../telemetry/constants';
+import { COMPLETION_ADD_BRACKETS, FORMAT_ON_TYPE } from '../telemetry/constants';
 import { isTestExecution } from './constants';
 import {
     IAutoCompleteSettings,
@@ -71,7 +71,9 @@ export class PythonSettings extends EventEmitter implements IPythonSettings {
         if (!PythonSettings.pythonSettings.has(workspaceFolderKey)) {
             const settings = new PythonSettings(workspaceFolderUri);
             PythonSettings.pythonSettings.set(workspaceFolderKey, settings);
-            sendTelemetryEvent(COMPLETION, undefined, { addBrackets: settings.autoComplete.addBrackets });
+            const formatOnType = workspace.getConfiguration('editor', resource).get('formatOnType', false);
+            sendTelemetryEvent(COMPLETION_ADD_BRACKETS, undefined, { enabled: settings.autoComplete.addBrackets });
+            sendTelemetryEvent(FORMAT_ON_TYPE, undefined, { enabled: formatOnType });
         }
         // tslint:disable-next-line:no-non-null-assertion
         return PythonSettings.pythonSettings.get(workspaceFolderKey)!;
@@ -104,7 +106,6 @@ export class PythonSettings extends EventEmitter implements IPythonSettings {
         this.disposables.forEach(disposable => disposable.dispose());
         this.disposables = [];
     }
-
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     private initializeSettings() {
         const workspaceRoot = this.workspaceRoot.fsPath;
