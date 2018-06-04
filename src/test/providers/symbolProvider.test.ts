@@ -58,15 +58,29 @@ suite('Symbol Provider', () => {
         symbolProvider = new PythonSymbolProvider(jediFactory.object, 0);
         await testDocumentation(1, __filename, 1);
     });
+    test('Ensure symbols are returned (for untitled documents)', async () => {
+        symbolProvider = new PythonSymbolProvider(jediFactory.object, 0);
+        await testDocumentation(1, __filename, 1, undefined, true);
+    });
     test('Ensure symbols are returned with a debounce of 100ms', async () => {
         symbolProvider = new PythonSymbolProvider(jediFactory.object, 0);
         await testDocumentation(1, __filename, 1);
+    });
+    test('Ensure symbols are returned with a debounce of 100ms (for untitled documents)', async () => {
+        symbolProvider = new PythonSymbolProvider(jediFactory.object, 0);
+        await testDocumentation(1, __filename, 1, undefined, true);
     });
     test('Ensure symbols are not returned when cancelled', async () => {
         symbolProvider = new PythonSymbolProvider(jediFactory.object, 0);
         const tokenSource = new CancellationTokenSource();
         tokenSource.cancel();
         await testDocumentation(1, __filename, 0, tokenSource.token);
+    });
+    test('Ensure symbols are not returned when cancelled (for untitled documents)', async () => {
+        symbolProvider = new PythonSymbolProvider(jediFactory.object, 0);
+        const tokenSource = new CancellationTokenSource();
+        tokenSource.cancel();
+        await testDocumentation(1, __filename, 0, tokenSource.token, true);
     });
     test('Ensure symbols are returned only for the last request', async () => {
         symbolProvider = new PythonSymbolProvider(jediFactory.object, 100);
@@ -76,6 +90,14 @@ suite('Symbol Provider', () => {
             testDocumentation(3, __filename, 1)
         ]);
     });
+    test('Ensure symbols are returned for all the requests when the doc is untitled', async () => {
+        symbolProvider = new PythonSymbolProvider(jediFactory.object, 100);
+        await Promise.all([
+            testDocumentation(1, __filename, 1, undefined, true),
+            testDocumentation(2, __filename, 1, undefined, true),
+            testDocumentation(3, __filename, 1, undefined, true)
+        ]);
+    });
     test('Ensure symbols are returned for multiple documents', async () => {
         symbolProvider = new PythonSymbolProvider(jediFactory.object, 0);
         await Promise.all([
@@ -83,11 +105,25 @@ suite('Symbol Provider', () => {
             testDocumentation(2, 'file2', 1)
         ]);
     });
-    test('Ensure symbols are returned for multiple documents with a debounce of 100ms', async () => {
+    test('Ensure symbols are returned for multiple untitled documents ', async () => {
         symbolProvider = new PythonSymbolProvider(jediFactory.object, 0);
+        await Promise.all([
+            testDocumentation(1, 'file1', 1, undefined, true),
+            testDocumentation(2, 'file2', 1, undefined, true)
+        ]);
+    });
+    test('Ensure symbols are returned for multiple documents with a debounce of 100ms', async () => {
+        symbolProvider = new PythonSymbolProvider(jediFactory.object, 100);
         await Promise.all([
             testDocumentation(1, 'file1', 1),
             testDocumentation(2, 'file2', 1)
+        ]);
+    });
+    test('Ensure symbols are returned for multiple untitled documents with a debounce of 100ms', async () => {
+        symbolProvider = new PythonSymbolProvider(jediFactory.object, 100);
+        await Promise.all([
+            testDocumentation(1, 'file1', 1, undefined, true),
+            testDocumentation(2, 'file2', 1, undefined, true)
         ]);
     });
 });
