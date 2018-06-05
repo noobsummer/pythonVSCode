@@ -190,17 +190,18 @@ async function sendStartupTelemetry(activatedPromise: Promise<void>, serviceCont
         const interpreterService = serviceContainer.get<IInterpreterService>(IInterpreterService);
         const [condaVersion, interpreter, interpreters] = await Promise.all([
             condaLocator.getCondaVersion().catch(() => undefined),
-            interpreterService.getActiveInterpreter().catch(() => undefined),
+            interpreterService.getActiveInterpreter().catch<PythonInterpreter | undefined>(() => undefined),
             interpreterService.getInterpreters().catch<PythonInterpreter[]>(() => [])
         ]);
         const workspaceService = serviceContainer.get<IWorkspaceService>(IWorkspaceService);
         const workspaceFolderCount = workspaceService.hasWorkspaceFolders ? workspaceService.workspaceFolders!.length : 0;
         const pythonVersion = interpreter ? interpreter.version_info.join('.') : undefined;
+        const interpreterType = interpreter ? interpreter.type : undefined;
         const hasPython3 = interpreters
             .filter(item => item && Array.isArray(item.version_info) ? item.version_info[0] === 3 : false)
             .length > 0;
 
-        const props = { condaVersion, terminal: terminalShellType, pythonVersion, workspaceFolderCount, hasPython3 };
+        const props = { condaVersion, terminal: terminalShellType, pythonVersion, interpreterType, workspaceFolderCount, hasPython3 };
         sendTelemetryEvent(EDITOR_LOAD, duration, props);
     } catch (ex) {
         logger.logError('sendStartupTelemetry failed.', ex);
