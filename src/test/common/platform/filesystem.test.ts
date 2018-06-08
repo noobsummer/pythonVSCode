@@ -77,4 +77,10 @@ suite('FileSystem', () => {
         const fileContents = await fileSystem.readFile(fileToAppendTo);
         expect(fileContents).to.be.equal(dataToAppend);
     });
+    test('Test searching for files', async () => {
+        const files = await fileSystem.search(path.join(__dirname, '*.js'));
+        expect(files).to.be.array();
+        expect(files.length).to.be.at.least(1);
+        expect(files).to.include(__filename);
+    });
 });

@@ -363,7 +363,8 @@ suite('Interpreters Conda Service', () => {
                 const expectedCondaLocation = untildify(knownLocation);
                 platformService.setup(p => p.isWindows).returns(() => false);
                 processService.setup(p => p.exec(TypeMoq.It.isValue('conda'), TypeMoq.It.isValue(['--version']), TypeMoq.It.isAny())).returns(() => Promise.reject(new Error('Not Found')));
-                fileSystem.setup(fs => fs.fileExists(TypeMoq.It.isAny())).returns((file: string) => Promise.resolve(file === expectedCondaLocation));
+                fileSystem.setup(fs => fs.search(TypeMoq.It.isAny())).returns(() => Promise.resolve([expectedCondaLocation]));
+                fileSystem.setup(fs => fs.fileExists(TypeMoq.It.isValue(expectedCondaLocation))).returns(() => Promise.resolve(true));
 
                 const condaExe = await condaService.getCondaFile();
                 assert.equal(condaExe, expectedCondaLocation, 'Failed to identify');
@@ -373,6 +374,7 @@ suite('Interpreters Conda Service', () => {
     test('Must return \'conda\' if conda could not be found in known locations', async () => {
         platformService.setup(p => p.isWindows).returns(() => false);
         processService.setup(p => p.exec(TypeMoq.It.isValue('conda'), TypeMoq.It.isValue(['--version']), TypeMoq.It.isAny())).returns(() => Promise.reject(new Error('Not Found')));
+        fileSystem.setup(fs => fs.search(TypeMoq.It.isAny())).returns(() => Promise.resolve([]));
         fileSystem.setup(fs => fs.fileExists(TypeMoq.It.isAny())).returns((file: string) => Promise.resolve(false));
 
         const condaExe = await condaService.getCondaFile();

@@ -1,4 +1,3 @@
-import * as glob from 'glob';
 import { inject, injectable, named, optional } from 'inversify';
 import * as path from 'path';
 import { IFileSystem, IPlatformService } from '../../../common/platform/types';
@@ -182,11 +181,8 @@ export class CondaService implements ICondaService {
         return this.getCondaFileFromKnownLocations();
     }
     private async getCondaFileFromKnownLocations(): Promise<string> {
-        const condaFiles = await new Promise<string[]>(resolve => {
-            glob(untildify(CondaLocationsGlob), (_, files) => {
-                resolve(Array.isArray(files) ? files : []);
-            });
-        });
+        const condaFiles = await this.fileSystem.search(untildify(CondaLocationsGlob))
+            .catch<string[]>(() => []);
 
         const validCondaFiles = condaFiles.filter(condaPath => condaPath.length > 0);
         return validCondaFiles.length === 0 ? 'conda' : validCondaFiles[0];
