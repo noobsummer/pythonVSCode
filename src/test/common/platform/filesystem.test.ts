@@ -81,6 +81,8 @@ suite('FileSystem', () => {
         const files = await fileSystem.search(path.join(__dirname, '*.js'));
         expect(files).to.be.array();
         expect(files.length).to.be.at.least(1);
-        expect(files).to.include(__filename);
+        const expectedFileName = __filename.replace(/\\/g, '/');
+        const fileName = files[0].replace(/\\/g, '/');
+        expect(fileName).to.equal(expectedFileName);
     });
 });
