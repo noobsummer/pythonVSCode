@@ -1,3 +1,4 @@
+import * as glob from 'glob';
 import { inject, injectable, named, optional } from 'inversify';
 import * as path from 'path';
 import { IFileSystem, IPlatformService } from '../../../common/platform/types';
@@ -11,9 +12,9 @@ import { CondaHelper } from './condaHelper';
 // tslint:disable-next-line:no-require-imports no-var-requires
 const untildify: (value: string) => string = require('untildify');
 
-export const KNOWN_CONDA_LOCATIONS = ['~/anaconda/bin/conda', '~/miniconda/bin/conda',
-    '~/anaconda2/bin/conda', '~/miniconda2/bin/conda',
-    '~/anaconda3/bin/conda', '~/miniconda3/bin/conda'];
+// This glob pattern will match all of the following:
+// ~/anaconda/bin/conda, ~/anaconda3/bin/conda, ~/miniconda/bin/conda, ~/miniconda3/bin/conda
+export const CondaLocationsGlob = '~/*conda*/bin/conda';
 
 @injectable()
 export class CondaService implements ICondaService {
@@ -181,9 +182,11 @@ export class CondaService implements ICondaService {
         return this.getCondaFileFromKnownLocations();
     }
     private async getCondaFileFromKnownLocations(): Promise<string> {
-        const condaFiles = await Promise.all(KNOWN_CONDA_LOCATIONS
-            .map(untildify)
-            .map(async (condaPath: string) => this.fileSystem.fileExists(condaPath).then(exists => exists ? condaPath : '')));
+        const condaFiles = await new Promise<string[]>(resolve => {
+            glob(untildify(CondaLocationsGlob), (_, files) => {
+                resolve(Array.isArray(files) ? files : []);
+            });
+        });
 
         const validCondaFiles = condaFiles.filter(condaPath => condaPath.length > 0);
         return validCondaFiles.length === 0 ? 'conda' : validCondaFiles[0];
